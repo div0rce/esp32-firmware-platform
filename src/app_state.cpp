@@ -42,16 +42,22 @@ void app_state_set(SystemState state) {
     unlock_state();
 }
 
+void app_state_apply_event(AppEvent event) {
+    lock_state();
+    current_state = state_machine_next(current_state, event);
+    unlock_state();
+}
+
 void app_state_set_fault(FaultCode fault) {
     lock_state();
-    current_state = SYSTEM_STATE_FAULT;
+    current_state = state_machine_next(current_state, APP_EVENT_FAULT_DETECTED);
     current_fault = fault;
     unlock_state();
 }
 
 void app_state_clear_fault() {
     lock_state();
-    current_state = SYSTEM_STATE_RECOVERY;
+    current_state = state_machine_next(current_state, APP_EVENT_RECOVERY_REQUESTED);
     current_fault = FAULT_NONE;
     unlock_state();
 }
