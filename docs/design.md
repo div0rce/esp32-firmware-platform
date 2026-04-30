@@ -69,7 +69,7 @@ The ESP32 build verifies that the Arduino/FreeRTOS integration compiles against 
 
 - No physical ESP32 board run is claimed.
 - No oscilloscope or logic analyzer measurements are included.
-- Wokwi simulation is configured, but serial output is not claimed until a real simulation artifact is captured.
+- Wokwi configuration files are present, but no Wokwi run artifact is currently included.
 - Arduino-ESP32 provides the hardware abstraction layer; this is not bare-metal register-level firmware.
 - ESP task watchdog integration is compiled, but physical watchdog reset behavior is not validated without hardware.
 - ADC behavior is architecturally modeled and unit-tested; actual ESP32 ADC calibration and noise behavior require board-level validation.
