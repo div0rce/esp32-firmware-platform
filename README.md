@@ -70,7 +70,7 @@ pio device monitor
 
 ## Wokwi Simulation
 
-Build the firmware first, then open the project with Wokwi using the root `wokwi.toml` and `diagram.json` files. Wokwi serial output has not been captured yet, so this repository currently claims simulation readiness, not simulation validation.
+Build the firmware first, then open the project with Wokwi using the root `wokwi.toml` and `diagram.json` files. Wokwi configuration files are present, but no Wokwi run artifact is currently included.
 
 ## Telemetry Format
 
@@ -89,13 +89,13 @@ Pure logic modules are separated from Arduino-dependent modules so that conversi
 |---|---:|---|
 | PlatformIO ESP32 firmware builds | Verified | Local build + GitHub Actions |
 | Native logic tests pass | Verified | Local tests + GitHub Actions |
-| Wokwi simulation configured | Ready | `wokwi.toml`, `diagram.json` |
+| Wokwi configuration files present | Configured | `wokwi.toml`, `diagram.json` |
 | Wokwi serial telemetry observed | Pending | No captured simulation output yet |
 | Physical ESP32 hardware validation | Not available | No board |
 | Oscilloscope / logic analyzer traces | Not available | No board |
 | Real hardware bring-up | Not claimed | Correctly withheld |
 
-Current validation is build, host-side logic tests, and Wokwi simulation readiness. Physical ESP32 hardware validation is not claimed because no board was available during development.
+Current validation is build, host-side logic tests, and Wokwi configuration presence. Physical ESP32 hardware validation is not claimed because no board was available during development.
 
 ## Limitations
 

@@ -21,6 +21,12 @@ jobs:
       - name: Install PlatformIO
         run: python -m pip install --upgrade platformio
 
+      - name: Check source hygiene
+        run: |
+          test ! -e src/fault_state.cpp
+          test ! -e src/sensor_math.cpp
+          test ! -e src/telemetry_format.cpp
+
       - name: Build ESP32 firmware
         run: platformio run -e esp32dev
 
@@ -37,6 +43,12 @@ jobs:
 
       - name: Install PlatformIO
         run: python -m pip install --upgrade platformio
+
+      - name: Check source hygiene
+        run: |
+          test ! -e src/fault_state.cpp
+          test ! -e src/sensor_math.cpp
+          test ! -e src/telemetry_format.cpp
 
       - name: Run native tests
         run: platformio test -e native
