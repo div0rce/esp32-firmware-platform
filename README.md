@@ -97,6 +97,12 @@ Pure logic modules are separated from Arduino-dependent modules so that conversi
 
 Current validation is build, host-side logic tests, and Wokwi configuration presence. Physical ESP32 hardware validation is not claimed because no board run has been captured.
 
+## Evidence Boundaries
+
+This repository currently provides build validation, host-side native tests, Wokwi configuration files, and design-level timing and porting notes.
+
+It does not claim physical ESP32 hardware validation, measured timing traces, oscilloscope/logic analyzer evidence, or captured Wokwi serial output.
+
 ## Limitations
 
 - No physical ESP32 board run has been captured.
@@ -109,6 +115,9 @@ Current validation is build, host-side logic tests, and Wokwi configuration pres
 
 - `docs/design.md`
 - `docs/architecture.md`
+- [Failure-injection behavior](docs/failure_injection_behavior.md)
+- [Timing budget](docs/timing_budget.md)
+- [Bare-metal porting notes](docs/bare_metal_porting_notes.md)
 - `docs/wiring.md`
 - `docs/simulation_plan.md`
 - `docs/test_plan.md`
