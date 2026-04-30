@@ -12,6 +12,7 @@ constexpr std::uint32_t SERIAL_BAUD_RATE = 115200;
 constexpr int ADC_RAW_MIN = 0;
 constexpr int ADC_RAW_MAX = 4095;
 constexpr int ADC_REF_MV = 3300;
+constexpr int ADC_RESOLUTION_BITS = 12;
 
 constexpr int ADC_MIN_VALID = 50;
 constexpr int ADC_MAX_VALID = 4000;
