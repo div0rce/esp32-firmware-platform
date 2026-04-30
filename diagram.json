@@ -53,6 +53,8 @@
     ["btn1:2.l", "esp:GND.1", "black", ["v0"]],
     ["esp:D2", "led1:A", "green", ["v0"]],
     ["led1:C", "r1:1", "green", ["v0"]],
-    ["r1:2", "esp:GND.1", "black", ["v0"]]
+    ["r1:2", "esp:GND.1", "black", ["v0"]],
+    ["esp:TX0", "$serialMonitor:RX", "", []],
+    ["esp:RX0", "$serialMonitor:TX", "", []]
   ]
 }
