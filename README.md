@@ -2,7 +2,7 @@
 
 [![PlatformIO CI](https://github.com/div0rce/esp32-firmware-platform/actions/workflows/platformio.yml/badge.svg)](https://github.com/div0rce/esp32-firmware-platform/actions/workflows/platformio.yml)
 
-Simulation-ready ESP32 firmware architecture targeting PlatformIO, Arduino-ESP32, FreeRTOS task design, native-tested firmware logic, and CI-backed validation.
+ESP32 firmware architecture with Wokwi configuration files present, targeting PlatformIO, Arduino-ESP32, FreeRTOS task design, native-tested firmware logic, and CI-backed validation.
 
 The repository name remains `esp32-firmware-platform` for stable links. The project itself is a fault-monitored sensor node firmware prototype.
 
@@ -50,7 +50,7 @@ Configured pin map:
 | Status LED | GPIO2 |
 | UART | USB serial, 115200 baud |
 
-The Wokwi circuit is defined by `diagram.json`. Physical ESP32 hardware validation is not claimed because no board was available during development.
+The Wokwi circuit is defined by `diagram.json`. Physical ESP32 hardware validation is not claimed because no board run has been captured.
 
 ## Build And Test
 
@@ -74,7 +74,7 @@ Build the firmware first, then open the project with Wokwi using the root `wokwi
 
 ## Telemetry Format
 
-Example packet format, not captured output:
+Example packet format only; not captured run output:
 
 ```text
 timestamp_ms=12500,state=SAMPLE,adc_raw=1842,voltage_mv=1485,fault=NONE
@@ -90,12 +90,12 @@ Pure logic modules are separated from Arduino-dependent modules so that conversi
 | PlatformIO ESP32 firmware builds | Verified | Local build + GitHub Actions |
 | Native logic tests pass | Verified | Local tests + GitHub Actions |
 | Wokwi configuration files present | Configured | `wokwi.toml`, `diagram.json` |
-| Wokwi serial telemetry observed | Pending | No captured simulation output yet |
+| Wokwi serial telemetry artifact | Pending | No Wokwi run artifact currently included |
 | Physical ESP32 hardware validation | Not available | No board |
 | Oscilloscope / logic analyzer traces | Not available | No board |
 | Real hardware bring-up | Not claimed | Correctly withheld |
 
-Current validation is build, host-side logic tests, and Wokwi configuration presence. Physical ESP32 hardware validation is not claimed because no board was available during development.
+Current validation is build, host-side logic tests, and Wokwi configuration presence. Physical ESP32 hardware validation is not claimed because no board run has been captured.
 
 ## Limitations
 
