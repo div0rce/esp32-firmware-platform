@@ -106,9 +106,10 @@ static void button_task(void* parameter) {
 
     ButtonEvent event;
     std::uint32_t last_accepted_ms = 0;
+    const TickType_t button_event_timeout = pdMS_TO_TICKS(100);
 
     while (true) {
-        if (button_receive_event(&event, portMAX_DELAY)) {
+        if (button_receive_event(&event, button_event_timeout)) {
             if (last_accepted_ms == 0U || elapsed_ms_u32(event.timestamp_ms, last_accepted_ms, BUTTON_DEBOUNCE_MS)) {
                 last_accepted_ms = event.timestamp_ms;
 
