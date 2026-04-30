@@ -15,10 +15,10 @@ void test_adc_raw_to_mv_midscale() {
 }
 
 void test_fault_for_adc_raw() {
-    TEST_ASSERT_EQUAL(FaultCode::ADC_OUT_OF_RANGE, fault_for_adc_raw(ADC_MIN_VALID - 1));
-    TEST_ASSERT_EQUAL(FaultCode::NONE, fault_for_adc_raw(ADC_MIN_VALID));
-    TEST_ASSERT_EQUAL(FaultCode::NONE, fault_for_adc_raw(ADC_MAX_VALID));
-    TEST_ASSERT_EQUAL(FaultCode::ADC_OUT_OF_RANGE, fault_for_adc_raw(ADC_MAX_VALID + 1));
+    TEST_ASSERT_EQUAL(FAULT_ADC_OUT_OF_RANGE, fault_for_adc_raw(ADC_MIN_VALID - 1));
+    TEST_ASSERT_EQUAL(FAULT_NONE, fault_for_adc_raw(ADC_MIN_VALID));
+    TEST_ASSERT_EQUAL(FAULT_NONE, fault_for_adc_raw(ADC_MAX_VALID));
+    TEST_ASSERT_EQUAL(FAULT_ADC_OUT_OF_RANGE, fault_for_adc_raw(ADC_MAX_VALID + 1));
 }
 
 int main() {

@@ -19,7 +19,7 @@ void telemetry_print_sample(SystemState state, const SensorSample& sample) {
     fields.voltage_mv = sample.voltage_mv;
     fields.fault = sample.fault;
 
-    if (format_telemetry_packet(buffer, sizeof(buffer), fields)) {
+    if (format_telemetry_packet(buffer, sizeof(buffer), &fields)) {
         Serial.println(buffer);
     }
 }

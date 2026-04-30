@@ -6,12 +6,12 @@ void test_telemetry_packet_format() {
     char buffer[128];
     TelemetryFields fields;
     fields.timestamp_ms = 12500;
-    fields.state = SystemState::SAMPLE;
+    fields.state = SYSTEM_STATE_SAMPLE;
     fields.adc_raw = 1842;
     fields.voltage_mv = 1485;
-    fields.fault = FaultCode::NONE;
+    fields.fault = FAULT_NONE;
 
-    TEST_ASSERT_TRUE(format_telemetry_packet(buffer, sizeof(buffer), fields));
+    TEST_ASSERT_TRUE(format_telemetry_packet(buffer, sizeof(buffer), &fields));
     TEST_ASSERT_EQUAL_STRING(
         "timestamp_ms=12500,state=SAMPLE,adc_raw=1842,voltage_mv=1485,fault=NONE",
         buffer
@@ -21,7 +21,7 @@ void test_telemetry_packet_format() {
 void test_fault_event_format() {
     char buffer[96];
 
-    TEST_ASSERT_TRUE(format_fault_event(buffer, sizeof(buffer), 12700, FaultCode::ADC_OUT_OF_RANGE));
+    TEST_ASSERT_TRUE(format_fault_event(buffer, sizeof(buffer), 12700, FAULT_ADC_OUT_OF_RANGE));
     TEST_ASSERT_EQUAL_STRING(
         "timestamp_ms=12700,event=FAULT_EVENT,fault=ADC_OUT_OF_RANGE",
         buffer
@@ -32,12 +32,12 @@ void test_format_rejects_small_buffer() {
     char buffer[8];
     TelemetryFields fields;
     fields.timestamp_ms = 1;
-    fields.state = SystemState::IDLE;
+    fields.state = SYSTEM_STATE_IDLE;
     fields.adc_raw = 1;
     fields.voltage_mv = 1;
-    fields.fault = FaultCode::NONE;
+    fields.fault = FAULT_NONE;
 
-    TEST_ASSERT_FALSE(format_telemetry_packet(buffer, sizeof(buffer), fields));
+    TEST_ASSERT_FALSE(format_telemetry_packet(buffer, sizeof(buffer), &fields));
 }
 
 int main() {

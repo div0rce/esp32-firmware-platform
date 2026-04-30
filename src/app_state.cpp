@@ -4,8 +4,8 @@
 #include <freertos/semphr.h>
 
 static SemaphoreHandle_t state_mutex = nullptr;
-static SystemState current_state = SystemState::BOOT;
-static FaultCode current_fault = FaultCode::NONE;
+static SystemState current_state = SYSTEM_STATE_BOOT;
+static FaultCode current_fault = FAULT_NONE;
 
 static void lock_state() {
     if (state_mutex != nullptr) {
@@ -29,8 +29,8 @@ bool app_state_init() {
     }
 
     lock_state();
-    current_state = SystemState::BOOT;
-    current_fault = FaultCode::NONE;
+    current_state = SYSTEM_STATE_BOOT;
+    current_fault = FAULT_NONE;
     unlock_state();
 
     return true;
@@ -44,15 +44,15 @@ void app_state_set(SystemState state) {
 
 void app_state_set_fault(FaultCode fault) {
     lock_state();
-    current_state = SystemState::FAULT;
+    current_state = SYSTEM_STATE_FAULT;
     current_fault = fault;
     unlock_state();
 }
 
 void app_state_clear_fault() {
     lock_state();
-    current_state = SystemState::RECOVERY;
-    current_fault = FaultCode::NONE;
+    current_state = SYSTEM_STATE_RECOVERY;
+    current_fault = FAULT_NONE;
     unlock_state();
 }
 
