@@ -2,17 +2,17 @@
 
 const char* state_to_string(SystemState state) {
     switch (state) {
-        case SystemState::BOOT:
+        case SYSTEM_STATE_BOOT:
             return "BOOT";
-        case SystemState::IDLE:
+        case SYSTEM_STATE_IDLE:
             return "IDLE";
-        case SystemState::SAMPLE:
+        case SYSTEM_STATE_SAMPLE:
             return "SAMPLE";
-        case SystemState::TRANSMIT:
+        case SYSTEM_STATE_TRANSMIT:
             return "TRANSMIT";
-        case SystemState::FAULT:
+        case SYSTEM_STATE_FAULT:
             return "FAULT";
-        case SystemState::RECOVERY:
+        case SYSTEM_STATE_RECOVERY:
             return "RECOVERY";
         default:
             return "UNKNOWN";
@@ -21,17 +21,17 @@ const char* state_to_string(SystemState state) {
 
 const char* fault_to_string(FaultCode fault) {
     switch (fault) {
-        case FaultCode::NONE:
+        case FAULT_NONE:
             return "NONE";
-        case FaultCode::ADC_OUT_OF_RANGE:
+        case FAULT_ADC_OUT_OF_RANGE:
             return "ADC_OUT_OF_RANGE";
-        case FaultCode::SENSOR_QUEUE_SEND_FAILED:
+        case FAULT_SENSOR_QUEUE_SEND_FAILED:
             return "SENSOR_QUEUE_SEND_FAILED";
-        case FaultCode::BUTTON_QUEUE_SEND_FAILED:
+        case FAULT_BUTTON_QUEUE_SEND_FAILED:
             return "BUTTON_QUEUE_SEND_FAILED";
-        case FaultCode::SAMPLE_TIMER_FAILED:
+        case FAULT_SAMPLE_TIMER_FAILED:
             return "SAMPLE_TIMER_FAILED";
-        case FaultCode::WATCHDOG_TIMEOUT:
+        case FAULT_WATCHDOG_TIMEOUT:
             return "WATCHDOG_TIMEOUT";
         default:
             return "UNKNOWN";

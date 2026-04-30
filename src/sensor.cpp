@@ -22,5 +22,5 @@ SensorSample read_sensor_sample(const SampleRequest& request) {
 }
 
 bool sample_is_valid(const SensorSample& sample) {
-    return sample.fault == FaultCode::NONE;
+    return sample.fault == FAULT_NONE;
 }

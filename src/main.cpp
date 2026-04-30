@@ -46,7 +46,7 @@ static void sensor_task(void* parameter) {
 
     while (true) {
         if (xQueueReceive(sample_request_queue, &request, portMAX_DELAY) == pdPASS) {
-            app_state_set(SystemState::SAMPLE);
+            app_state_set(SYSTEM_STATE_SAMPLE);
 
             const SensorSample sample = read_sensor_sample(request);
             record_sample_timestamp(sample.timestamp_ms);
@@ -56,7 +56,7 @@ static void sensor_task(void* parameter) {
             }
 
             if (xQueueSend(sensor_sample_queue, &sample, 0) != pdPASS) {
-                enter_fault(FaultCode::SENSOR_QUEUE_SEND_FAILED);
+                enter_fault(FAULT_SENSOR_QUEUE_SEND_FAILED);
             }
         }
 
@@ -79,19 +79,19 @@ static void telemetry_task(void* parameter) {
 
         if (received == pdPASS) {
             const bool valid_sample = sample_is_valid(sample);
-            const bool active_fault = app_state_get_fault() != FaultCode::NONE;
+            const bool active_fault = app_state_get_fault() != FAULT_NONE;
             const SystemState state = (valid_sample && !active_fault)
-                ? SystemState::TRANSMIT
-                : SystemState::FAULT;
+                ? SYSTEM_STATE_TRANSMIT
+                : SYSTEM_STATE_FAULT;
 
-            if (state == SystemState::TRANSMIT) {
-                app_state_set(SystemState::TRANSMIT);
+            if (state == SYSTEM_STATE_TRANSMIT) {
+                app_state_set(SYSTEM_STATE_TRANSMIT);
             }
 
             telemetry_print_sample(state, sample);
 
-            if (valid_sample && app_state_get_fault() == FaultCode::NONE) {
-                app_state_set(SystemState::IDLE);
+            if (valid_sample && app_state_get_fault() == FAULT_NONE) {
+                app_state_set(SYSTEM_STATE_IDLE);
             }
         }
 
@@ -113,9 +113,9 @@ static void button_task(void* parameter) {
             if (elapsed_ms >= BUTTON_DEBOUNCE_MS) {
                 last_accepted_ms = event.timestamp_ms;
 
-                if (app_state_get_state() == SystemState::FAULT) {
+                if (app_state_get_state() == SYSTEM_STATE_FAULT) {
                     app_state_clear_fault();
-                    app_state_set(SystemState::IDLE);
+                    app_state_set(SYSTEM_STATE_IDLE);
                 }
             }
         }
@@ -130,21 +130,21 @@ static void fault_task(void* parameter) {
 
     while (true) {
         if (button_consume_overflow()) {
-            enter_fault(FaultCode::BUTTON_QUEUE_SEND_FAILED);
+            enter_fault(FAULT_BUTTON_QUEUE_SEND_FAILED);
         }
 
         if (sampling_timer_consume_overflow()) {
-            enter_fault(FaultCode::SAMPLE_TIMER_FAILED);
+            enter_fault(FAULT_SAMPLE_TIMER_FAILED);
         }
 
         const std::uint32_t now_ms = millis();
         const std::uint32_t last_sample_ms = get_last_sample_timestamp();
 
         if (last_sample_ms != 0U && (now_ms - last_sample_ms) > APP_WATCHDOG_TIMEOUT_MS) {
-            enter_fault(FaultCode::WATCHDOG_TIMEOUT);
+            enter_fault(FAULT_WATCHDOG_TIMEOUT);
         }
 
-        const bool fault_active = app_state_get_state() == SystemState::FAULT;
+        const bool fault_active = app_state_get_state() == SYSTEM_STATE_FAULT;
         digitalWrite(STATUS_LED_PIN, fault_active ? HIGH : LOW);
 
         watchdog_reset_current_task();
@@ -185,10 +185,10 @@ void setup() {
     sensor_init();
     button_init(button_event_queue);
 
-    app_state_set(SystemState::IDLE);
+    app_state_set(SYSTEM_STATE_IDLE);
 
     if (!create_tasks() || !sampling_timer_start(sample_request_queue)) {
-        enter_fault(FaultCode::SAMPLE_TIMER_FAILED);
+        enter_fault(FAULT_SAMPLE_TIMER_FAILED);
         digitalWrite(STATUS_LED_PIN, HIGH);
     }
 }
