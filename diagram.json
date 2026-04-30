@@ -48,10 +48,10 @@
   "connections": [
     ["pot1:VCC", "esp:3V3", "red", ["v0"]],
     ["pot1:GND", "esp:GND.1", "black", ["v0"]],
-    ["pot1:SIG", "esp:GPIO34", "green", ["v0"]],
-    ["btn1:1.l", "esp:GPIO25", "green", ["v0"]],
+    ["pot1:SIG", "esp:D34", "green", ["v0"]],
+    ["btn1:1.l", "esp:D25", "green", ["v0"]],
     ["btn1:2.l", "esp:GND.1", "black", ["v0"]],
-    ["esp:GPIO2", "led1:A", "green", ["v0"]],
+    ["esp:D2", "led1:A", "green", ["v0"]],
     ["led1:C", "r1:1", "green", ["v0"]],
     ["r1:2", "esp:GND.1", "black", ["v0"]]
   ]
