@@ -1,30 +1,87 @@
-# ESP32 Firmware Platform
+# ESP32 Fault-Monitored Sensor Node
+
+[![PlatformIO CI](https://github.com/div0rce/esp32-firmware-platform/actions/workflows/platformio.yml/badge.svg)](https://github.com/div0rce/esp32-firmware-platform/actions/workflows/platformio.yml)
 
 Simulation-ready ESP32 firmware architecture targeting PlatformIO, Arduino-ESP32, FreeRTOS task design, native-tested firmware logic, and CI-backed validation.
 
-This project implements timer-driven ADC sampling, ISR-driven button events, queue-based task communication, UART telemetry formatting, explicit fault states, and watchdog logic for ESP32-class firmware.
+The repository name remains `esp32-firmware-platform` for stable links. The project itself is a fault-monitored sensor node firmware prototype.
 
-Hardware validation is not claimed because no physical ESP32 board was available during development.
+## What It Does
 
-## Build
+This firmware models a small embedded monitoring system:
+
+- Samples an analog input through the ESP32 ADC.
+- Converts raw ADC counts into millivolts.
+- Classifies invalid readings as explicit fault states.
+- Handles a GPIO button interrupt through a queue-backed event path.
+- Emits compact UART telemetry packets.
+- Uses FreeRTOS tasks and queues to separate sampling, telemetry, button handling, and fault monitoring.
+- Integrates ESP task watchdog feeding plus an application watchdog for stale sampling.
+
+## Architecture
+
+The hardware-facing shell uses Arduino-ESP32 and FreeRTOS. Pure firmware logic is separated into modules that can be tested under PlatformIO's native environment without an ESP32 board.
+
+Current task model:
+
+| Task | Responsibility |
+|---|---|
+| `sensor_task` | Waits for timer requests, reads ADC, validates samples, queues telemetry |
+| `telemetry_task` | Owns `Serial` output and prints formatted packets |
+| `button_task` | Consumes button ISR events and applies debounce in task context |
+| `fault_task` | Tracks queue overflow, stale samples, watchdog faults, and LED fault indication |
+
+Current queue model:
+
+| Queue | Producer | Consumer |
+|---|---|---|
+| `sample_request_queue` | ESP timer callback | `sensor_task` |
+| `sensor_sample_queue` | `sensor_task` | `telemetry_task` |
+| `button_event_queue` | GPIO ISR | `button_task` |
+
+## Hardware Wiring
+
+Configured pin map:
+
+| Signal | ESP32 Pin |
+|---|---:|
+| ADC input | GPIO34 |
+| Button input | GPIO25 |
+| Status LED | GPIO2 |
+| UART | USB serial, 115200 baud |
+
+The Wokwi circuit is defined by `diagram.json`. Physical ESP32 hardware validation is not claimed because no board was available during development.
+
+## Build And Test
 
 ```bash
 pio run -e esp32dev
+pio test -e native
 ```
 
-## Native Tests
+## Upload And Monitor
+
+Requires a connected ESP32 board:
 
 ```bash
-pio test -e native
+pio run -e esp32dev -t upload
+pio device monitor
 ```
 
 ## Wokwi Simulation
 
-Build the firmware first, then open the project with Wokwi using the root `wokwi.toml` and `diagram.json` files.
+Build the firmware first, then open the project with Wokwi using the root `wokwi.toml` and `diagram.json` files. Wokwi serial output has not been captured yet, so this repository currently claims simulation readiness, not simulation validation.
 
-```bash
-pio run -e esp32dev
+## Telemetry Format
+
+Example packet format, not captured output:
+
+```text
+timestamp_ms=12500,state=SAMPLE,adc_raw=1842,voltage_mv=1485,fault=NONE
+timestamp_ms=12700,event=FAULT_EVENT,fault=ADC_OUT_OF_RANGE
 ```
+
+Pure logic modules are separated from Arduino-dependent modules so that conversion, fault detection, state naming, and telemetry formatting can be unit-tested under PlatformIO's native environment.
 
 ## Validation Status
 
@@ -39,6 +96,14 @@ pio run -e esp32dev
 | Real hardware bring-up | Not claimed | Correctly withheld |
 
 Current validation is build, host-side logic tests, and Wokwi simulation readiness. Physical ESP32 hardware validation is not claimed because no board was available during development.
+
+## Limitations
+
+- No physical ESP32 board run has been captured.
+- No oscilloscope or logic analyzer timing trace is included.
+- Wokwi output has not yet been captured as a validation artifact.
+- This is an Arduino-ESP32 firmware prototype, not a bare-metal or production firmware stack.
+- Task watchdog integration is compiled and architecturally integrated; physical watchdog reset behavior is not claimed.
 
 ## Documentation
 
