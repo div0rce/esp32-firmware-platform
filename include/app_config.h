@@ -8,6 +8,7 @@ constexpr std::uint8_t BUTTON_PIN = 25;
 constexpr std::uint8_t STATUS_LED_PIN = 2;
 
 constexpr std::uint32_t SERIAL_BAUD_RATE = 115200;
+constexpr std::size_t TELEMETRY_BUFFER_LENGTH = 128;
 
 constexpr int ADC_RAW_MIN = 0;
 constexpr int ADC_RAW_MAX = 4095;
