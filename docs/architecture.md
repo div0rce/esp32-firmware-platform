@@ -37,3 +37,26 @@ ANY_STATE -> FAULT -> RECOVERY -> IDLE
 - Application watchdog: detects stale sampling and enters recoverable `WATCHDOG_TIMEOUT`.
 
 Task watchdog behavior is compiled and architecturally integrated. Physical watchdog reset behavior is not claimed without real hardware.
+
+## Portability Boundary
+
+The firmware separates portable C logic from ESP32/Arduino integration code.
+
+Portable C modules:
+
+- `sensor_math.c`
+- `fault_state.c`
+- `state_machine.c`
+- `telemetry_format.c`
+- `time_utils.c`
+
+ESP32/Arduino integration modules:
+
+- `main.cpp`
+- `sensor.cpp`
+- `telemetry.cpp`
+- `watchdog.cpp`
+- `sampling_timer.cpp`
+- `button.cpp`
+
+The native test environment validates the portable C layer without Arduino, ESP32 hardware, or vendor HAL dependencies.
