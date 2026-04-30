@@ -11,6 +11,7 @@
 #include "sampling_timer.h"
 #include "sensor.h"
 #include "telemetry.h"
+#include "time_utils.h"
 #include "watchdog.h"
 
 static QueueHandle_t sample_request_queue = nullptr;
@@ -46,7 +47,7 @@ static void sensor_task(void* parameter) {
 
     while (true) {
         if (xQueueReceive(sample_request_queue, &request, portMAX_DELAY) == pdPASS) {
-            app_state_set(SYSTEM_STATE_SAMPLE);
+            app_state_apply_event(APP_EVENT_SAMPLE_STARTED);
 
             const SensorSample sample = read_sensor_sample(request);
             record_sample_timestamp(sample.timestamp_ms);
@@ -85,13 +86,13 @@ static void telemetry_task(void* parameter) {
                 : SYSTEM_STATE_FAULT;
 
             if (state == SYSTEM_STATE_TRANSMIT) {
-                app_state_set(SYSTEM_STATE_TRANSMIT);
+                app_state_apply_event(APP_EVENT_TRANSMIT_STARTED);
             }
 
             telemetry_print_sample(state, sample);
 
             if (valid_sample && app_state_get_fault() == FAULT_NONE) {
-                app_state_set(SYSTEM_STATE_IDLE);
+                app_state_apply_event(APP_EVENT_TRANSMIT_COMPLETE);
             }
         }
 
@@ -108,14 +109,12 @@ static void button_task(void* parameter) {
 
     while (true) {
         if (button_receive_event(&event, portMAX_DELAY)) {
-            const std::uint32_t elapsed_ms = event.timestamp_ms - last_accepted_ms;
-
-            if (elapsed_ms >= BUTTON_DEBOUNCE_MS) {
+            if (last_accepted_ms == 0U || elapsed_ms_u32(event.timestamp_ms, last_accepted_ms, BUTTON_DEBOUNCE_MS)) {
                 last_accepted_ms = event.timestamp_ms;
 
                 if (app_state_get_state() == SYSTEM_STATE_FAULT) {
                     app_state_clear_fault();
-                    app_state_set(SYSTEM_STATE_IDLE);
+                    app_state_apply_event(APP_EVENT_RECOVERY_COMPLETE);
                 }
             }
         }
@@ -140,7 +139,7 @@ static void fault_task(void* parameter) {
         const std::uint32_t now_ms = millis();
         const std::uint32_t last_sample_ms = get_last_sample_timestamp();
 
-        if (last_sample_ms != 0U && (now_ms - last_sample_ms) > APP_WATCHDOG_TIMEOUT_MS) {
+        if (last_sample_ms != 0U && elapsed_ms_u32(now_ms, last_sample_ms, APP_WATCHDOG_TIMEOUT_MS)) {
             enter_fault(FAULT_WATCHDOG_TIMEOUT);
         }
 
@@ -185,7 +184,7 @@ void setup() {
     sensor_init();
     button_init(button_event_queue);
 
-    app_state_set(SYSTEM_STATE_IDLE);
+    app_state_apply_event(APP_EVENT_BOOT_COMPLETE);
 
     if (!create_tasks() || !sampling_timer_start(sample_request_queue)) {
         enter_fault(FAULT_SAMPLE_TIMER_FAILED);
