@@ -107,6 +107,7 @@ Current validation is build, host-side logic tests, and Wokwi simulation readine
 
 ## Documentation
 
+- `docs/design.md`
 - `docs/architecture.md`
 - `docs/wiring.md`
 - `docs/simulation_plan.md`
