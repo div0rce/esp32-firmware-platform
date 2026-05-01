@@ -9,7 +9,8 @@ PYTHON="${PYTHON:-python3}"
 SERIAL_LOG="${SERIAL_LOG:-/tmp/wokwi_runtime.txt}"
 WOKWI_TIMEOUT_SECONDS="${WOKWI_TIMEOUT_SECONDS:-60}"
 WOKWI_SIM_TIMEOUT_MS="${WOKWI_SIM_TIMEOUT_MS:-30000}"
-ELF=".pio/build/esp32dev/firmware.elf"
+PIO_ENV="${PIO_ENV:-esp32dev}"
+ELF=".pio/build/$PIO_ENV/firmware.elf"
 
 command -v "$PIO" >/dev/null 2>&1 || {
     echo "PlatformIO not found: $PIO" >&2
@@ -35,7 +36,7 @@ else
     exit 1
 fi
 
-"$PIO" run -e esp32dev
+"$PIO" run -e "$PIO_ENV"
 
 test -f "$ELF" || {
     echo "missing ELF: $ELF" >&2

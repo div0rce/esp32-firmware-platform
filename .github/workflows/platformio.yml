@@ -27,8 +27,8 @@ jobs:
           test ! -e src/sensor_math.cpp
           test ! -e src/telemetry_format.cpp
 
-      - name: Build ESP32 firmware
-        run: platformio run -e esp32dev
+      - name: Build XIAO ESP32C3 firmware
+        run: platformio run -e seeed_xiao_esp32c3
 
   native-tests:
     runs-on: ubuntu-latest

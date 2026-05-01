@@ -2,14 +2,14 @@
 
 | Claim | Status | Evidence |
 |---|---:|---|
-| PlatformIO ESP32 firmware builds | Verified | `pio run -e esp32dev`, GitHub Actions |
+| PlatformIO XIAO ESP32C3 firmware builds | Verified | `pio run -e seeed_xiao_esp32c3` |
 | Native logic tests pass | Verified | `pio test -e native`, GitHub Actions |
-| Wokwi simulation configured | Ready | `wokwi.toml`, `diagram.json` |
+| Wokwi simulation configured | Ready | `wokwi.toml`, `diagram.json`, `esp32dev` simulation pin map |
 | Wokwi serial telemetry observed | Pending | No captured simulation output yet |
-| Physical ESP32 hardware validation | Not available | No board |
-| Oscilloscope / logic analyzer traces | Not available | No board |
+| Physical XIAO ESP32C3 hardware validation | Pending | Board wiring prepared; no run captured yet |
+| Oscilloscope / logic analyzer traces | Not available | No trace captured |
 | Real hardware bring-up | Not claimed | Correctly withheld |
 
-Current validation is build, host-side logic tests, and Wokwi simulation readiness.
+Current validation is XIAO ESP32C3 build, generic ESP32 Wokwi-target build, host-side logic tests, and Wokwi simulation readiness.
 
-Physical ESP32 hardware validation is not claimed because no board was available during development.
+Physical XIAO ESP32C3 hardware validation is not claimed until serial output from the wired board is captured.
