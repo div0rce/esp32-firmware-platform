@@ -21,6 +21,13 @@ void test_fault_for_adc_raw() {
     TEST_ASSERT_EQUAL(FAULT_ADC_OUT_OF_RANGE, fault_for_adc_raw(ADC_MAX_VALID + 1));
 }
 
+void test_adc_runtime_range_cases() {
+    TEST_ASSERT_EQUAL(FAULT_ADC_OUT_OF_RANGE, fault_for_adc_raw(0));
+    TEST_ASSERT_EQUAL(FAULT_NONE, fault_for_adc_raw(200));
+    TEST_ASSERT_EQUAL(FAULT_NONE, fault_for_adc_raw(2050));
+    TEST_ASSERT_EQUAL(FAULT_ADC_OUT_OF_RANGE, fault_for_adc_raw(4095));
+}
+
 void test_moving_average_fills_then_rolls_window() {
     AdcMovingAverage filter;
     adc_moving_average_init(&filter);
@@ -78,6 +85,7 @@ int main() {
     RUN_TEST(test_adc_raw_to_mv_bounds);
     RUN_TEST(test_adc_raw_to_mv_midscale);
     RUN_TEST(test_fault_for_adc_raw);
+    RUN_TEST(test_adc_runtime_range_cases);
     RUN_TEST(test_moving_average_fills_then_rolls_window);
     RUN_TEST(test_moving_average_clamps_adc_bounds);
     RUN_TEST(test_adc_low_fault_hysteresis);

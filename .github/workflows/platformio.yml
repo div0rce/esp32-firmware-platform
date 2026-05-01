@@ -52,3 +52,28 @@ jobs:
 
       - name: Run native tests
         run: platformio test -e native
+
+  wokwi-runtime:
+    runs-on: ubuntu-latest
+    env:
+      WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PlatformIO
+        run: python -m pip install --upgrade pip platformio
+
+      - name: Install Wokwi CLI
+        run: |
+          curl -L https://wokwi.com/ci/install.sh | sh
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.wokwi/bin" >> "$GITHUB_PATH"
+
+      - name: Run Wokwi runtime check
+        run: scripts/wokwi_runtime_check.sh
