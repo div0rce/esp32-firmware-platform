@@ -43,34 +43,34 @@ Current queue model:
 
 Configured pin map:
 
-| Signal | ESP32 Pin |
+| Signal | XIAO ESP32C3 Pin |
 |---|---:|
-| ADC input | GPIO34 |
-| Button input | GPIO25 |
-| Status LED | GPIO2 |
+| ADC input | D2 / GPIO4 |
+| Button input | D1 / GPIO3 |
+| Status LED | D10 / GPIO10 |
 | UART | USB serial, 115200 baud |
 
-The Wokwi circuit is defined by `diagram.json`. Physical ESP32 hardware validation is not claimed because no board run has been captured.
+Physical wiring is documented in `docs/wiring.md`. The Wokwi circuit in `diagram.json` uses the generic `esp32dev` simulation pin map and is not the source of truth for the XIAO ESP32C3 wiring.
 
 ## Build And Test
 
 ```bash
-pio run -e esp32dev
+pio run -e seeed_xiao_esp32c3
 pio test -e native
 ```
 
 ## Upload And Monitor
 
-Requires a connected ESP32 board:
+Requires a connected XIAO ESP32C3 board:
 
 ```bash
-pio run -e esp32dev -t upload
+pio run -e seeed_xiao_esp32c3 -t upload
 pio device monitor
 ```
 
 ## Wokwi Simulation
 
-Build the firmware first, then open the project with Wokwi using the root `wokwi.toml` and `diagram.json` files. Wokwi configuration files are present, but no Wokwi run artifact is currently included.
+Build the `esp32dev` simulation firmware first, then open the project with Wokwi using the root `wokwi.toml` and `diagram.json` files. Wokwi configuration files are present, but no Wokwi run artifact is currently included.
 
 ## Telemetry Format
 

@@ -3,9 +3,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#if defined(USE_ESP32DEV_PINMAP)
 #define ADC_PIN ((uint8_t)34)
 #define BUTTON_PIN ((uint8_t)25)
 #define STATUS_LED_PIN ((uint8_t)2)
+#else
+#define ADC_PIN ((uint8_t)4)
+#define BUTTON_PIN ((uint8_t)3)
+#define STATUS_LED_PIN ((uint8_t)10)
+#endif
 
 #define SERIAL_BAUD_RATE ((uint32_t)115200)
 #define TELEMETRY_BUFFER_LENGTH ((size_t)128)

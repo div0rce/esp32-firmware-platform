@@ -3,12 +3,12 @@
 ## Local Build
 
 ```bash
-pio run -e esp32dev
+pio run -e seeed_xiao_esp32c3
 ```
 
 Expected result:
 
-- ESP32 firmware compiles with pinned PlatformIO dependencies.
+- XIAO ESP32C3 firmware compiles with pinned PlatformIO dependencies.
 
 ## Native Logic Tests
 
@@ -33,4 +33,4 @@ Both checks are required before protected `main` can accept a merge.
 
 ## Hardware Status
 
-No physical ESP32 hardware validation is claimed.
+No physical XIAO ESP32C3 hardware validation is claimed until a board run is captured.

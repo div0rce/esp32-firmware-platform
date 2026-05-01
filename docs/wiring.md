@@ -2,19 +2,21 @@
 
 ## Pin Map
 
-| Signal | ESP32 Pin | Notes |
+| Signal | XIAO ESP32C3 Pin | Notes |
 |---|---:|---|
-| ADC input | GPIO34 | Potentiometer or analog input |
-| Button input | GPIO25 | Pull-up input, active-low |
-| Status LED | GPIO2 | Wokwi LED / common onboard LED pin |
+| ADC input | D2 / GPIO4 | Potentiometer wiper or analog input |
+| Button input | D1 / GPIO3 | Pull-up input, active-low |
+| Status LED | D10 / GPIO10 | External LED through 220 ohm resistor |
 | UART | USB serial | 115200 baud |
 
-## Wokwi Circuit
+## Physical XIAO ESP32C3 Circuit
 
-The Wokwi circuit connects:
+The physical XIAO ESP32C3 circuit connects:
 
-- Potentiometer signal to GPIO34.
-- Pushbutton to GPIO25 and GND.
-- LED and 220 ohm resistor from GPIO2 to GND.
+- Potentiometer outer pins to 3V3 and GND.
+- Potentiometer center/wiper pin to D2 / GPIO4.
+- Pushbutton between D1 / GPIO3 and GND.
+- LED anode to D10 / GPIO10 through a 220 ohm resistor.
+- LED cathode to GND.
 
-This wiring describes the configured simulation circuit and intended ESP32 target wiring. It is not a physical board validation record.
+Keep all GPIO input voltages at 3.3 V. Do not feed a XIAO ESP32C3 GPIO pin with 5 V.
