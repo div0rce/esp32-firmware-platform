@@ -15,7 +15,9 @@
       "id": "pot1",
       "top": -120,
       "left": 250,
-      "attrs": {}
+      "attrs": {
+        "value": "512"
+      }
     },
     {
       "type": "wokwi-pushbutton",
