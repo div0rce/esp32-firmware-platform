@@ -11,7 +11,7 @@ pio run -e esp32dev
 2. Open the project in Wokwi.
 3. Run the simulation using `wokwi.toml` and `diagram.json`.
 
-Note: `diagram.json` uses the generic `esp32dev` simulation pin map. Physical XIAO ESP32C3 wiring is documented in `docs/wiring.md`.
+Note: `diagram.json` uses the generic `esp32dev` simulation pin map. Physical XIAO ESP32S3 wiring is documented in `docs/wiring.md`.
 
 ## Simulation Checks
 
