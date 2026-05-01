@@ -43,28 +43,28 @@ Current queue model:
 
 Configured pin map:
 
-| Signal | XIAO ESP32C3 Pin |
+| Signal | XIAO ESP32S3 Pin |
 |---|---:|
-| ADC input | D2 / GPIO4 |
-| Button input | D1 / GPIO3 |
-| Status LED | D10 / GPIO10 |
+| ADC input | D2 / GPIO3 |
+| Button input | D1 / GPIO2 |
+| Status LED | D10 / GPIO9 |
 | UART | USB serial, 115200 baud |
 
-Physical wiring is documented in `docs/wiring.md`. The Wokwi circuit in `diagram.json` uses the generic `esp32dev` simulation pin map and is not the source of truth for the XIAO ESP32C3 wiring.
+Physical wiring is documented in `docs/wiring.md`. The Wokwi circuit in `diagram.json` uses the generic `esp32dev` simulation pin map and is not the source of truth for the XIAO ESP32S3 wiring.
 
 ## Build And Test
 
 ```bash
-pio run -e seeed_xiao_esp32c3
+pio run -e seeed_xiao_esp32s3
 pio test -e native
 ```
 
 ## Upload And Monitor
 
-Requires a connected XIAO ESP32C3 board:
+Requires a connected XIAO ESP32S3 board:
 
 ```bash
-pio run -e seeed_xiao_esp32c3 -t upload
+pio run -e seeed_xiao_esp32s3 -t upload
 pio device monitor
 ```
 
