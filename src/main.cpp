@@ -8,6 +8,7 @@
 #include "app_state.h"
 #include "button.h"
 #include "fault_state.h"
+#include "firmware_hal.h"
 #include "manufacturing_self_test.h"
 #include "sampling_timer.h"
 #include "sensor.h"
@@ -42,21 +43,21 @@ static void enter_fault(FaultCode fault) {
 
 #ifdef ENABLE_TRACE_PINS
 static void trace_pins_init() {
-    pinMode(TRACE_SAMPLE_PIN, OUTPUT);
-    pinMode(TRACE_TELEMETRY_PIN, OUTPUT);
-    pinMode(TRACE_FAULT_PIN, OUTPUT);
+    firmware_hal::gpio_configure_output(TRACE_SAMPLE_PIN);
+    firmware_hal::gpio_configure_output(TRACE_TELEMETRY_PIN);
+    firmware_hal::gpio_configure_output(TRACE_FAULT_PIN);
 
-    digitalWrite(TRACE_SAMPLE_PIN, LOW);
-    digitalWrite(TRACE_TELEMETRY_PIN, LOW);
-    digitalWrite(TRACE_FAULT_PIN, LOW);
+    firmware_hal::gpio_write_level(TRACE_SAMPLE_PIN, false);
+    firmware_hal::gpio_write_level(TRACE_TELEMETRY_PIN, false);
+    firmware_hal::gpio_write_level(TRACE_FAULT_PIN, false);
 }
 
 static void trace_pulse_begin(uint8_t pin) {
-    digitalWrite(pin, HIGH);
+    firmware_hal::gpio_write_level(pin, true);
 }
 
 static void trace_pulse_end(uint8_t pin) {
-    digitalWrite(pin, LOW);
+    firmware_hal::gpio_write_level(pin, false);
 }
 #else
 static void trace_pins_init() {}
@@ -168,7 +169,7 @@ static void fault_task(void* parameter) {
             enter_fault(FAULT_SAMPLE_TIMER_FAILED);
         }
 
-        const std::uint32_t now_ms = millis();
+        const std::uint32_t now_ms = firmware_hal::monotonic_millis();
         const std::uint32_t last_sample_ms = get_last_sample_timestamp();
 
         if (last_sample_ms != 0U && elapsed_ms_u32(now_ms, last_sample_ms, APP_WATCHDOG_TIMEOUT_MS)) {
@@ -176,7 +177,7 @@ static void fault_task(void* parameter) {
         }
 
         const bool fault_active = app_state_get_state() == SYSTEM_STATE_FAULT;
-        digitalWrite(STATUS_LED_PIN, fault_active ? HIGH : LOW);
+        firmware_hal::gpio_write_level(STATUS_LED_PIN, fault_active);
 
         trace_pulse_end(TRACE_FAULT_PIN);
 
@@ -205,24 +206,24 @@ static bool create_tasks() {
 void setup() {
     telemetry_init();
 
-    pinMode(STATUS_LED_PIN, OUTPUT);
-    digitalWrite(STATUS_LED_PIN, LOW);
+    firmware_hal::gpio_configure_output(STATUS_LED_PIN);
+    firmware_hal::gpio_write_level(STATUS_LED_PIN, false);
     trace_pins_init();
 
     if (!app_state_init() || !watchdog_init() || !create_queues()) {
-        digitalWrite(STATUS_LED_PIN, HIGH);
+        firmware_hal::gpio_write_level(STATUS_LED_PIN, true);
         while (true) {
-            delay(1000);
+            firmware_hal::sleep_ms(1000);
         }
     }
 
     sensor_init();
     const ManufacturingSelfTestResult self_test = manufacturing_self_test_run();
-    telemetry_print_self_test_result(millis(), self_test);
+    telemetry_print_self_test_result(firmware_hal::monotonic_millis(), self_test);
 
     if (!self_test.passed) {
         enter_fault(FAULT_MANUFACTURING_SELF_TEST_FAILED);
-        digitalWrite(STATUS_LED_PIN, HIGH);
+        firmware_hal::gpio_write_level(STATUS_LED_PIN, true);
     }
 
     button_init(button_event_queue);
@@ -231,7 +232,7 @@ void setup() {
 
     if (!create_tasks() || !sampling_timer_start(sample_request_queue)) {
         enter_fault(FAULT_SAMPLE_TIMER_FAILED);
-        digitalWrite(STATUS_LED_PIN, HIGH);
+        firmware_hal::gpio_write_level(STATUS_LED_PIN, true);
     }
 }
 
