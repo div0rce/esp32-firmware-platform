@@ -9,6 +9,7 @@
 #include "button.h"
 #include "fault_state.h"
 #include "manufacturing_self_test.h"
+#include "runtime_health.h"
 #include "sampling_timer.h"
 #include "sensor.h"
 #if defined(ENABLE_STRESS_MODE)
@@ -21,6 +22,11 @@
 static QueueHandle_t sample_request_queue = nullptr;
 static QueueHandle_t sensor_sample_queue = nullptr;
 static QueueHandle_t button_event_queue = nullptr;
+
+static TaskHandle_t sensor_task_handle = nullptr;
+static TaskHandle_t telemetry_task_handle = nullptr;
+static TaskHandle_t button_task_handle = nullptr;
+static TaskHandle_t fault_task_handle = nullptr;
 
 static portMUX_TYPE sample_timestamp_mux = portMUX_INITIALIZER_UNLOCKED;
 static std::uint32_t last_sample_timestamp_ms = 0;
@@ -91,6 +97,7 @@ static void sensor_task(void* parameter) {
 #endif
             trace_pulse_end(TRACE_SAMPLE_PIN);
             record_sample_timestamp(sample.timestamp_ms);
+            runtime_health_record_sensor_sample();
 
             if (!sample_is_valid(sample)) {
                 enter_fault(sample.fault);
@@ -110,6 +117,7 @@ static void telemetry_task(void* parameter) {
     (void)watchdog_register_current_task();
 
     SensorSample sample;
+    std::uint32_t last_health_ms = 0;
 
     while (true) {
         const BaseType_t received = xQueueReceive(
@@ -132,6 +140,7 @@ static void telemetry_task(void* parameter) {
             trace_pulse_begin(TRACE_TELEMETRY_PIN);
             telemetry_print_sample(state, sample);
             trace_pulse_end(TRACE_TELEMETRY_PIN);
+            runtime_health_record_telemetry_packet();
 #if defined(ENABLE_STRESS_MODE)
             stress_mode_delay_telemetry();
 #endif
@@ -139,6 +148,23 @@ static void telemetry_task(void* parameter) {
             if (valid_sample && app_state_get_fault() == FAULT_NONE) {
                 app_state_apply_event(APP_EVENT_TRANSMIT_COMPLETE);
             }
+        }
+
+        const std::uint32_t now_ms = millis();
+        if (last_health_ms == 0U || elapsed_ms_u32(now_ms, last_health_ms, RUNTIME_HEALTH_PERIOD_MS)) {
+            RuntimeHealthInputs inputs;
+            inputs.timestamp_ms = now_ms;
+            inputs.sensor_task = sensor_task_handle;
+            inputs.telemetry_task = telemetry_task_handle;
+            inputs.button_task = button_task_handle;
+            inputs.fault_task = fault_task_handle;
+            inputs.sample_request_queue = sample_request_queue;
+            inputs.sensor_sample_queue = sensor_sample_queue;
+            inputs.button_event_queue = button_event_queue;
+
+            telemetry_print_runtime_health(runtime_health_capture(inputs));
+            runtime_health_record_telemetry_packet();
+            last_health_ms = now_ms;
         }
 
         watchdog_reset_current_task();
@@ -155,6 +181,8 @@ static void button_task(void* parameter) {
 
     while (true) {
         if (button_receive_event(&event, button_event_timeout)) {
+            runtime_health_record_button_event();
+
             if (last_accepted_ms == 0U || elapsed_ms_u32(event.timestamp_ms, last_accepted_ms, BUTTON_DEBOUNCE_MS)) {
                 last_accepted_ms = event.timestamp_ms;
 
@@ -175,6 +203,7 @@ static void fault_task(void* parameter) {
 
     while (true) {
         trace_pulse_begin(TRACE_FAULT_PIN);
+        runtime_health_record_fault_check();
 
 #if defined(ENABLE_STRESS_MODE)
         stress_mode_service(&stress_mode_state, millis(), button_event_queue);
@@ -216,10 +245,10 @@ static bool create_queues() {
 }
 
 static bool create_tasks() {
-    return xTaskCreate(sensor_task, "sensor_task", SENSOR_TASK_STACK, nullptr, SENSOR_TASK_PRIORITY, nullptr) == pdPASS
-        && xTaskCreate(telemetry_task, "telemetry_task", TELEMETRY_TASK_STACK, nullptr, TELEMETRY_TASK_PRIORITY, nullptr) == pdPASS
-        && xTaskCreate(button_task, "button_task", BUTTON_TASK_STACK, nullptr, BUTTON_TASK_PRIORITY, nullptr) == pdPASS
-        && xTaskCreate(fault_task, "fault_task", FAULT_TASK_STACK, nullptr, FAULT_TASK_PRIORITY, nullptr) == pdPASS;
+    return xTaskCreate(sensor_task, "sensor_task", SENSOR_TASK_STACK, nullptr, SENSOR_TASK_PRIORITY, &sensor_task_handle) == pdPASS
+        && xTaskCreate(telemetry_task, "telemetry_task", TELEMETRY_TASK_STACK, nullptr, TELEMETRY_TASK_PRIORITY, &telemetry_task_handle) == pdPASS
+        && xTaskCreate(button_task, "button_task", BUTTON_TASK_STACK, nullptr, BUTTON_TASK_PRIORITY, &button_task_handle) == pdPASS
+        && xTaskCreate(fault_task, "fault_task", FAULT_TASK_STACK, nullptr, FAULT_TASK_PRIORITY, &fault_task_handle) == pdPASS;
 }
 
 void setup() {
