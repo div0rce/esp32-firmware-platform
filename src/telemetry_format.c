@@ -49,15 +49,19 @@ bool format_self_test_event(
     uint32_t timestamp_ms,
     bool passed,
     int adc_raw,
-    bool adc_raw_in_range
+    bool adc_raw_in_range,
+    bool button_gpio_read_ok,
+    bool button_level
 ) {
     return write_checked(
         buffer,
         buffer_len,
-        "timestamp_ms=%lu,event=SELF_TEST,result=%s,adc_raw=%d,adc_raw_in_range=%s",
+        "timestamp_ms=%lu,event=SELF_TEST,result=%s,adc_raw=%d,adc=%s,button_reg=%s,button=%u",
         (unsigned long)timestamp_ms,
         passed ? "PASS" : "FAIL",
         adc_raw,
-        adc_raw_in_range ? "PASS" : "FAIL"
+        adc_raw_in_range ? "PASS" : "FAIL",
+        button_gpio_read_ok ? "PASS" : "FAIL",
+        button_level ? 1U : 0U
     );
 }
