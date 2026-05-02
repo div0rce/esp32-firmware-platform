@@ -52,6 +52,7 @@ Portable C modules:
 
 ESP32/Arduino integration modules:
 
+- `firmware_hal.cpp`
 - `main.cpp`
 - `sensor.cpp`
 - `telemetry.cpp`
