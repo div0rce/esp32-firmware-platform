@@ -60,13 +60,12 @@ Physical oscilloscope evidence for selected GPIO trace behavior is documented in
 | Fixed-window ADC moving average | Reduces threshold chatter near ADC fault limits | Adds filtering latency to fault clearing | Acceptable at 100 ms sample cadence |
 | Optional GPIO trace pins | Enables oscilloscope timing visibility | Consumes GPIOs in trace builds | Good diagnostic trade-off because default build leaves trace disabled |
 | Boot-time self-test telemetry | Gives bring-up/factory-style observability | Adds one ADC read and one boot UART line | Low overhead and useful for bench validation |
+| Runtime health telemetry | Reports heap minimum, task stack high-water marks, task loop counters, and queue depth from `telemetry_task` | Adds one diagnostic UART line per second | Useful for bench validation without changing UART ownership |
 
 ## Current Evidence Gaps
 
 The following are not measured in this repository yet:
 
-- FreeRTOS stack high-water marks.
-- Runtime heap minimum.
 - Queue high-water occupancy.
 - Current draw or power consumption.
 - Long-run physical stability duration beyond the committed short captures.

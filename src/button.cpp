@@ -1,8 +1,7 @@
 #include "button.h"
 
-#include <Arduino.h>
-
 #include "app_config.h"
+#include "firmware_hal.h"
 
 static QueueHandle_t button_queue = nullptr;
 static portMUX_TYPE overflow_mux = portMUX_INITIALIZER_UNLOCKED;
@@ -45,8 +44,8 @@ static void IRAM_ATTR button_isr() {
 void button_init(QueueHandle_t queue) {
     button_queue = queue;
 
-    pinMode(BUTTON_PIN, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), button_isr, FALLING);
+    firmware_hal::gpio_configure_input_pullup(BUTTON_PIN);
+    firmware_hal::gpio_attach_falling_interrupt(BUTTON_PIN, button_isr);
 }
 
 bool button_receive_event(ButtonEvent* event, TickType_t timeout_ticks) {
@@ -65,3 +64,11 @@ bool button_consume_overflow() {
 
     return overflow;
 }
+
+#if defined(ENABLE_STRESS_MODE)
+void button_stress_mark_overflow() {
+    portENTER_CRITICAL(&overflow_mux);
+    button_queue_overflow = true;
+    portEXIT_CRITICAL(&overflow_mux);
+}
+#endif

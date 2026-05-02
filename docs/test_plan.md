@@ -23,6 +23,18 @@ Expected result:
 - Telemetry formatting tests pass.
 - Native integration tests compose ADC classification, state transitions, telemetry formatting, recovery, and stale-sample timeout behavior.
 
+## Stress Build
+
+```bash
+pio run -e seeed_xiao_esp32s3_stress
+```
+
+Expected result:
+
+- Stress firmware compiles with forced ADC fault/recovery behavior enabled.
+- Button overflow and sampling timer overflow fault paths are compiled into the opt-in stress build.
+- The default `seeed_xiao_esp32s3` environment remains non-stress firmware.
+
 ## CI
 
 GitHub Actions runs:
