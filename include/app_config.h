@@ -22,6 +22,14 @@
 #define SERIAL_BAUD_RATE ((uint32_t)115200)
 #define TELEMETRY_BUFFER_LENGTH ((size_t)256)
 
+#define FIRMWARE_NAME "esp32-firmware-platform"
+#define FIRMWARE_VERSION "dev"
+#if defined(USE_ESP32DEV_PINMAP)
+#define FIRMWARE_TARGET "esp32dev"
+#else
+#define FIRMWARE_TARGET "seeed_xiao_esp32s3"
+#endif
+
 #define ADC_RAW_MIN 0
 #define ADC_RAW_MAX 4095
 #define ADC_REF_MV 3300

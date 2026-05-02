@@ -151,7 +151,7 @@ static void telemetry_task(void* parameter) {
             }
         }
 
-        const std::uint32_t now_ms = millis();
+        const std::uint32_t now_ms = firmware_hal::monotonic_millis();
         if (last_health_ms == 0U || elapsed_ms_u32(now_ms, last_health_ms, RUNTIME_HEALTH_PERIOD_MS)) {
             RuntimeHealthInputs inputs;
             inputs.timestamp_ms = now_ms;
@@ -207,7 +207,7 @@ static void fault_task(void* parameter) {
         runtime_health_record_fault_check();
 
 #if defined(ENABLE_STRESS_MODE)
-        stress_mode_service(&stress_mode_state, millis(), button_event_queue);
+        stress_mode_service(&stress_mode_state, firmware_hal::monotonic_millis(), button_event_queue);
 #endif
 
         if (button_consume_overflow()) {
@@ -259,18 +259,43 @@ void setup() {
     firmware_hal::gpio_write_level(STATUS_LED_PIN, false);
     trace_pins_init();
 
-    if (!app_state_init() || !watchdog_init() || !create_queues()) {
+    const bool app_state_init_ok = app_state_init();
+    const bool watchdog_init_ok = watchdog_init();
+    const bool queue_create_ok = create_queues();
+
+    sensor_init();
+#if defined(ENABLE_STRESS_MODE)
+    stress_mode_init(&stress_mode_state);
+#endif
+    ManufacturingSelfTestResult self_test = manufacturing_self_test_run();
+
+    if (!app_state_init_ok || !watchdog_init_ok || !queue_create_ok) {
+        manufacturing_self_test_complete(
+            &self_test,
+            app_state_init_ok,
+            watchdog_init_ok,
+            queue_create_ok,
+            false
+        );
+        telemetry_print_self_test_result(firmware_hal::monotonic_millis(), self_test);
         firmware_hal::gpio_write_level(STATUS_LED_PIN, true);
         while (true) {
             firmware_hal::sleep_ms(1000);
         }
     }
 
-    sensor_init();
-#if defined(ENABLE_STRESS_MODE)
-    stress_mode_init(&stress_mode_state);
-#endif
-    const ManufacturingSelfTestResult self_test = manufacturing_self_test_run();
+    button_init(button_event_queue);
+
+    app_state_apply_event(APP_EVENT_BOOT_COMPLETE);
+
+    const bool task_create_ok = create_tasks();
+    manufacturing_self_test_complete(
+        &self_test,
+        app_state_init_ok,
+        watchdog_init_ok,
+        queue_create_ok,
+        task_create_ok
+    );
     telemetry_print_self_test_result(firmware_hal::monotonic_millis(), self_test);
 
     if (!self_test.passed) {
@@ -278,11 +303,7 @@ void setup() {
         firmware_hal::gpio_write_level(STATUS_LED_PIN, true);
     }
 
-    button_init(button_event_queue);
-
-    app_state_apply_event(APP_EVENT_BOOT_COMPLETE);
-
-    if (!create_tasks() || !sampling_timer_start(sample_request_queue)) {
+    if (!task_create_ok || !sampling_timer_start(sample_request_queue)) {
         enter_fault(FAULT_SAMPLE_TIMER_FAILED);
         firmware_hal::gpio_write_level(STATUS_LED_PIN, true);
     }

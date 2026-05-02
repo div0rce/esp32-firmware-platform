@@ -46,11 +46,18 @@ void telemetry_print_self_test_result(std::uint32_t timestamp_ms, const Manufact
         buffer,
         sizeof(buffer),
         timestamp_ms,
+        result.firmware_name,
+        result.firmware_version,
+        result.firmware_target,
         result.passed,
         result.adc_raw,
         result.adc_raw_in_range,
         result.button_gpio_read_ok,
-        result.button_level
+        result.button_level,
+        result.app_state_init_ok,
+        result.watchdog_init_ok,
+        result.queue_create_ok,
+        result.task_create_ok
     )) {
         firmware_hal::uart_println(buffer);
     }
