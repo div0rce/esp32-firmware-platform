@@ -1,21 +1,20 @@
 #include "sensor.h"
 
-#include <Arduino.h>
-
 #include "app_config.h"
+#include "firmware_hal.h"
 #include "sensor_math.h"
 
 static AdcMovingAverage adc_filter;
 static AdcRangeState adc_range_state = ADC_RANGE_NORMAL;
 
 void sensor_init() {
-    analogReadResolution(ADC_RESOLUTION_BITS);
+    firmware_hal::adc_configure_resolution(ADC_RESOLUTION_BITS);
     adc_moving_average_init(&adc_filter);
     adc_range_state = ADC_RANGE_NORMAL;
 }
 
 SensorSample read_sensor_sample(const SampleRequest& request) {
-    const int raw = analogRead(ADC_PIN);
+    const int raw = firmware_hal::adc_read_raw(ADC_PIN);
     const int filtered_raw = adc_moving_average_update(&adc_filter, raw);
     adc_range_state = adc_range_update(adc_range_state, filtered_raw);
 

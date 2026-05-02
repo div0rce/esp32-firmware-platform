@@ -8,9 +8,14 @@
 #include "app_state.h"
 #include "button.h"
 #include "fault_state.h"
+#include "firmware_hal.h"
 #include "manufacturing_self_test.h"
+#include "runtime_health.h"
 #include "sampling_timer.h"
 #include "sensor.h"
+#if defined(ENABLE_STRESS_MODE)
+#include "stress_mode.h"
+#endif
 #include "telemetry.h"
 #include "time_utils.h"
 #include "watchdog.h"
@@ -19,8 +24,17 @@ static QueueHandle_t sample_request_queue = nullptr;
 static QueueHandle_t sensor_sample_queue = nullptr;
 static QueueHandle_t button_event_queue = nullptr;
 
+static TaskHandle_t sensor_task_handle = nullptr;
+static TaskHandle_t telemetry_task_handle = nullptr;
+static TaskHandle_t button_task_handle = nullptr;
+static TaskHandle_t fault_task_handle = nullptr;
+
 static portMUX_TYPE sample_timestamp_mux = portMUX_INITIALIZER_UNLOCKED;
 static std::uint32_t last_sample_timestamp_ms = 0;
+
+#if defined(ENABLE_STRESS_MODE)
+static StressModeState stress_mode_state;
+#endif
 
 static void record_sample_timestamp(std::uint32_t timestamp_ms) {
     portENTER_CRITICAL(&sample_timestamp_mux);
@@ -42,21 +56,21 @@ static void enter_fault(FaultCode fault) {
 
 #ifdef ENABLE_TRACE_PINS
 static void trace_pins_init() {
-    pinMode(TRACE_SAMPLE_PIN, OUTPUT);
-    pinMode(TRACE_TELEMETRY_PIN, OUTPUT);
-    pinMode(TRACE_FAULT_PIN, OUTPUT);
+    firmware_hal::gpio_configure_output(TRACE_SAMPLE_PIN);
+    firmware_hal::gpio_configure_output(TRACE_TELEMETRY_PIN);
+    firmware_hal::gpio_configure_output(TRACE_FAULT_PIN);
 
-    digitalWrite(TRACE_SAMPLE_PIN, LOW);
-    digitalWrite(TRACE_TELEMETRY_PIN, LOW);
-    digitalWrite(TRACE_FAULT_PIN, LOW);
+    firmware_hal::gpio_write_level(TRACE_SAMPLE_PIN, false);
+    firmware_hal::gpio_write_level(TRACE_TELEMETRY_PIN, false);
+    firmware_hal::gpio_write_level(TRACE_FAULT_PIN, false);
 }
 
 static void trace_pulse_begin(uint8_t pin) {
-    digitalWrite(pin, HIGH);
+    firmware_hal::gpio_write_level(pin, true);
 }
 
 static void trace_pulse_end(uint8_t pin) {
-    digitalWrite(pin, LOW);
+    firmware_hal::gpio_write_level(pin, false);
 }
 #else
 static void trace_pins_init() {}
@@ -75,9 +89,16 @@ static void sensor_task(void* parameter) {
             app_state_apply_event(APP_EVENT_SAMPLE_STARTED);
 
             trace_pulse_begin(TRACE_SAMPLE_PIN);
-            const SensorSample sample = read_sensor_sample(request);
+            SensorSample sample = read_sensor_sample(request);
+#if defined(ENABLE_STRESS_MODE)
+            const FaultCode stress_fault = stress_mode_forced_sample_fault(sample.timestamp_ms);
+            if (stress_fault != FAULT_NONE) {
+                sample.fault = stress_fault;
+            }
+#endif
             trace_pulse_end(TRACE_SAMPLE_PIN);
             record_sample_timestamp(sample.timestamp_ms);
+            runtime_health_record_sensor_sample();
 
             if (!sample_is_valid(sample)) {
                 enter_fault(sample.fault);
@@ -97,6 +118,7 @@ static void telemetry_task(void* parameter) {
     (void)watchdog_register_current_task();
 
     SensorSample sample;
+    std::uint32_t last_health_ms = 0;
 
     while (true) {
         const BaseType_t received = xQueueReceive(
@@ -119,10 +141,31 @@ static void telemetry_task(void* parameter) {
             trace_pulse_begin(TRACE_TELEMETRY_PIN);
             telemetry_print_sample(state, sample);
             trace_pulse_end(TRACE_TELEMETRY_PIN);
+            runtime_health_record_telemetry_packet();
+#if defined(ENABLE_STRESS_MODE)
+            stress_mode_delay_telemetry();
+#endif
 
             if (valid_sample && app_state_get_fault() == FAULT_NONE) {
                 app_state_apply_event(APP_EVENT_TRANSMIT_COMPLETE);
             }
+        }
+
+        const std::uint32_t now_ms = firmware_hal::monotonic_millis();
+        if (last_health_ms == 0U || elapsed_ms_u32(now_ms, last_health_ms, RUNTIME_HEALTH_PERIOD_MS)) {
+            RuntimeHealthInputs inputs;
+            inputs.timestamp_ms = now_ms;
+            inputs.sensor_task = sensor_task_handle;
+            inputs.telemetry_task = telemetry_task_handle;
+            inputs.button_task = button_task_handle;
+            inputs.fault_task = fault_task_handle;
+            inputs.sample_request_queue = sample_request_queue;
+            inputs.sensor_sample_queue = sensor_sample_queue;
+            inputs.button_event_queue = button_event_queue;
+
+            telemetry_print_runtime_health(runtime_health_capture(inputs));
+            runtime_health_record_telemetry_packet();
+            last_health_ms = now_ms;
         }
 
         watchdog_reset_current_task();
@@ -139,6 +182,8 @@ static void button_task(void* parameter) {
 
     while (true) {
         if (button_receive_event(&event, button_event_timeout)) {
+            runtime_health_record_button_event();
+
             if (last_accepted_ms == 0U || elapsed_ms_u32(event.timestamp_ms, last_accepted_ms, BUTTON_DEBOUNCE_MS)) {
                 last_accepted_ms = event.timestamp_ms;
 
@@ -159,6 +204,11 @@ static void fault_task(void* parameter) {
 
     while (true) {
         trace_pulse_begin(TRACE_FAULT_PIN);
+        runtime_health_record_fault_check();
+
+#if defined(ENABLE_STRESS_MODE)
+        stress_mode_service(&stress_mode_state, firmware_hal::monotonic_millis(), button_event_queue);
+#endif
 
         if (button_consume_overflow()) {
             enter_fault(FAULT_BUTTON_QUEUE_SEND_FAILED);
@@ -168,7 +218,7 @@ static void fault_task(void* parameter) {
             enter_fault(FAULT_SAMPLE_TIMER_FAILED);
         }
 
-        const std::uint32_t now_ms = millis();
+        const std::uint32_t now_ms = firmware_hal::monotonic_millis();
         const std::uint32_t last_sample_ms = get_last_sample_timestamp();
 
         if (last_sample_ms != 0U && elapsed_ms_u32(now_ms, last_sample_ms, APP_WATCHDOG_TIMEOUT_MS)) {
@@ -176,7 +226,7 @@ static void fault_task(void* parameter) {
         }
 
         const bool fault_active = app_state_get_state() == SYSTEM_STATE_FAULT;
-        digitalWrite(STATUS_LED_PIN, fault_active ? HIGH : LOW);
+        firmware_hal::gpio_write_level(STATUS_LED_PIN, fault_active);
 
         trace_pulse_end(TRACE_FAULT_PIN);
 
@@ -196,17 +246,17 @@ static bool create_queues() {
 }
 
 static bool create_tasks() {
-    return xTaskCreate(sensor_task, "sensor_task", SENSOR_TASK_STACK, nullptr, SENSOR_TASK_PRIORITY, nullptr) == pdPASS
-        && xTaskCreate(telemetry_task, "telemetry_task", TELEMETRY_TASK_STACK, nullptr, TELEMETRY_TASK_PRIORITY, nullptr) == pdPASS
-        && xTaskCreate(button_task, "button_task", BUTTON_TASK_STACK, nullptr, BUTTON_TASK_PRIORITY, nullptr) == pdPASS
-        && xTaskCreate(fault_task, "fault_task", FAULT_TASK_STACK, nullptr, FAULT_TASK_PRIORITY, nullptr) == pdPASS;
+    return xTaskCreate(sensor_task, "sensor_task", SENSOR_TASK_STACK, nullptr, SENSOR_TASK_PRIORITY, &sensor_task_handle) == pdPASS
+        && xTaskCreate(telemetry_task, "telemetry_task", TELEMETRY_TASK_STACK, nullptr, TELEMETRY_TASK_PRIORITY, &telemetry_task_handle) == pdPASS
+        && xTaskCreate(button_task, "button_task", BUTTON_TASK_STACK, nullptr, BUTTON_TASK_PRIORITY, &button_task_handle) == pdPASS
+        && xTaskCreate(fault_task, "fault_task", FAULT_TASK_STACK, nullptr, FAULT_TASK_PRIORITY, &fault_task_handle) == pdPASS;
 }
 
 void setup() {
     telemetry_init();
 
-    pinMode(STATUS_LED_PIN, OUTPUT);
-    digitalWrite(STATUS_LED_PIN, LOW);
+    firmware_hal::gpio_configure_output(STATUS_LED_PIN);
+    firmware_hal::gpio_write_level(STATUS_LED_PIN, false);
     trace_pins_init();
 
     const bool app_state_init_ok = app_state_init();
@@ -214,6 +264,9 @@ void setup() {
     const bool queue_create_ok = create_queues();
 
     sensor_init();
+#if defined(ENABLE_STRESS_MODE)
+    stress_mode_init(&stress_mode_state);
+#endif
     ManufacturingSelfTestResult self_test = manufacturing_self_test_run();
 
     if (!app_state_init_ok || !watchdog_init_ok || !queue_create_ok) {
@@ -224,10 +277,10 @@ void setup() {
             queue_create_ok,
             false
         );
-        telemetry_print_self_test_result(millis(), self_test);
-        digitalWrite(STATUS_LED_PIN, HIGH);
+        telemetry_print_self_test_result(firmware_hal::monotonic_millis(), self_test);
+        firmware_hal::gpio_write_level(STATUS_LED_PIN, true);
         while (true) {
-            delay(1000);
+            firmware_hal::sleep_ms(1000);
         }
     }
 
@@ -243,16 +296,16 @@ void setup() {
         queue_create_ok,
         task_create_ok
     );
-    telemetry_print_self_test_result(millis(), self_test);
+    telemetry_print_self_test_result(firmware_hal::monotonic_millis(), self_test);
 
     if (!self_test.passed) {
         enter_fault(FAULT_MANUFACTURING_SELF_TEST_FAILED);
-        digitalWrite(STATUS_LED_PIN, HIGH);
+        firmware_hal::gpio_write_level(STATUS_LED_PIN, true);
     }
 
     if (!task_create_ok || !sampling_timer_start(sample_request_queue)) {
         enter_fault(FAULT_SAMPLE_TIMER_FAILED);
-        digitalWrite(STATUS_LED_PIN, HIGH);
+        firmware_hal::gpio_write_level(STATUS_LED_PIN, true);
     }
 }
 
