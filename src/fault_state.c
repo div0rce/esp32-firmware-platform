@@ -33,6 +33,8 @@ const char* fault_to_string(FaultCode fault) {
             return "SAMPLE_TIMER_FAILED";
         case FAULT_WATCHDOG_TIMEOUT:
             return "WATCHDOG_TIMEOUT";
+        case FAULT_MANUFACTURING_SELF_TEST_FAILED:
+            return "MANUFACTURING_SELF_TEST_FAILED";
         default:
             return "UNKNOWN";
     }

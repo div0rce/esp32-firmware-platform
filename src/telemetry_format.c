@@ -42,3 +42,22 @@ bool format_fault_event(char* buffer, size_t buffer_len, uint32_t timestamp_ms, 
         fault_to_string(fault)
     );
 }
+
+bool format_self_test_event(
+    char* buffer,
+    size_t buffer_len,
+    uint32_t timestamp_ms,
+    bool passed,
+    int adc_raw,
+    bool adc_raw_in_range
+) {
+    return write_checked(
+        buffer,
+        buffer_len,
+        "timestamp_ms=%lu,event=SELF_TEST,result=%s,adc_raw=%d,adc_raw_in_range=%s",
+        (unsigned long)timestamp_ms,
+        passed ? "PASS" : "FAIL",
+        adc_raw,
+        adc_raw_in_range ? "PASS" : "FAIL"
+    );
+}

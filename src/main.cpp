@@ -8,6 +8,7 @@
 #include "app_state.h"
 #include "button.h"
 #include "fault_state.h"
+#include "manufacturing_self_test.h"
 #include "sampling_timer.h"
 #include "sensor.h"
 #include "telemetry.h"
@@ -216,6 +217,14 @@ void setup() {
     }
 
     sensor_init();
+    const ManufacturingSelfTestResult self_test = manufacturing_self_test_run();
+    telemetry_print_self_test_result(millis(), self_test);
+
+    if (!self_test.passed) {
+        enter_fault(FAULT_MANUFACTURING_SELF_TEST_FAILED);
+        digitalWrite(STATUS_LED_PIN, HIGH);
+    }
+
     button_init(button_event_queue);
 
     app_state_apply_event(APP_EVENT_BOOT_COMPLETE);
