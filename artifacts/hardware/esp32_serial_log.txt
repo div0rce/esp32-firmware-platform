@@ -1,0 +1,47 @@
+XIAO ESP32S3 physical serial bring-up artifact
+Target: Seeed Studio XIAO ESP32S3
+Source: PlatformIO USB serial monitor
+Baud: 115200
+Input condition: potentiometer near midpoint, button not pressed
+Capture duration: approximately 30 seconds after telemetry became active
+Boundary: physical serial output only; not ADC accuracy, electrical safety, sensor calibration, board-level correctness, field reliability, or production readiness validation
+--- captured serial excerpt ---
+timestamp_ms=20005,state=TRANSMIT,adc_raw=1948,voltage_mv=1579,fault=NONE
+timestamp_ms=20505,state=TRANSMIT,adc_raw=1952,voltage_mv=1576,fault=NONE
+timestamp_ms=20805,state=TRANSMIT,adc_raw=1973,voltage_mv=1579,fault=NONE
+timestamp_ms=21405,state=TRANSMIT,adc_raw=1965,voltage_mv=1578,fault=NONE
+timestamp_ms=21505,state=TRANSMIT,adc_raw=1963,voltage_mv=1580,fault=NONE
+timestamp_ms=22005,state=TRANSMIT,adc_raw=1987,voltage_mv=1578,fault=NONE
+timestamp_ms=22405,state=TRANSMIT,adc_raw=1961,voltage_mv=1575,fault=NONE
+timestamp_ms=23005,state=TRANSMIT,adc_raw=1948,voltage_mv=1582,fault=NONE
+timestamp_ms=23605,state=TRANSMIT,adc_raw=1959,voltage_mv=1584,fault=NONE
+timestamp_ms=23705,state=TRANSMIT,adc_raw=1961,voltage_mv=1583,fault=NONE
+timestamp_ms=24105,state=TRANSMIT,adc_raw=1955,voltage_mv=1575,fault=NONE
+timestamp_ms=24205,state=TRANSMIT,adc_raw=1971,voltage_mv=1578,fault=NONE
+timestamp_ms=25305,state=TRANSMIT,adc_raw=1960,voltage_mv=1580,fault=NONE
+timestamp_ms=25905,state=TRANSMIT,adc_raw=1941,voltage_mv=1578,fault=NONE
+timestamp_ms=26205,state=TRANSMIT,adc_raw=1959,voltage_mv=1571,fault=NONE
+timestamp_ms=26905,state=TRANSMIT,adc_raw=1960,voltage_mv=1575,fault=NONE
+timestamp_ms=27405,state=TRANSMIT,adc_raw=1957,voltage_mv=1579,fault=NONE
+timestamp_ms=27805,state=TRANSMIT,adc_raw=1943,voltage_mv=1584,fault=NONE
+timestamp_ms=29005,state=TRANSMIT,adc_raw=1991,voltage_mv=1588,fault=NONE
+timestamp_ms=29705,state=TRANSMIT,adc_raw=1940,voltage_mv=1575,fault=NONE
+timestamp_ms=30205,state=TRANSMIT,adc_raw=1959,voltage_mv=1573,fault=NONE
+timestamp_ms=31105,state=TRANSMIT,adc_raw=1972,voltage_mv=1579,fault=NONE
+timestamp_ms=31305,state=TRANSMIT,adc_raw=1965,voltage_mv=1580,fault=NONE
+timestamp_ms=31905,state=TRANSMIT,adc_raw=1969,voltage_mv=1575,fault=NONE
+timestamp_ms=33405,state=TRANSMIT,adc_raw=1961,voltage_mv=1577,fault=NONE
+timestamp_ms=33505,state=TRANSMIT,adc_raw=1971,voltage_mv=1577,fault=NONE
+timestamp_ms=35005,state=TRANSMIT,adc_raw=1959,voltage_mv=1575,fault=NONE
+timestamp_ms=35605,state=TRANSMIT,adc_raw=1952,voltage_mv=1581,fault=NONE
+timestamp_ms=35705,state=TRANSMIT,adc_raw=1955,voltage_mv=1581,fault=NONE
+timestamp_ms=36605,state=TRANSMIT,adc_raw=1963,voltage_mv=1587,fault=NONE
+timestamp_ms=37105,state=TRANSMIT,adc_raw=1975,voltage_mv=1585,fault=NONE
+timestamp_ms=37905,state=TRANSMIT,adc_raw=1952,voltage_mv=1574,fault=NONE
+timestamp_ms=38505,state=TRANSMIT,adc_raw=1952,voltage_mv=1576,fault=NONE
+timestamp_ms=38805,state=TRANSMIT,adc_raw=1955,voltage_mv=1573,fault=NONE
+timestamp_ms=39405,state=TRANSMIT,adc_raw=1967,voltage_mv=1583,fault=NONE
+timestamp_ms=39505,state=TRANSMIT,adc_raw=1992,voltage_mv=1591,fault=NONE
+timestamp_ms=41005,state=TRANSMIT,adc_raw=1956,voltage_mv=1577,fault=NONE
+timestamp_ms=41605,state=TRANSMIT,adc_raw=1957,voltage_mv=1576,fault=NONE
+timestamp_ms=42105,state=TRANSMIT,adc_raw=1991,voltage_mv=1581,fault=NONE
