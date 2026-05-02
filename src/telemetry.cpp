@@ -41,7 +41,9 @@ void telemetry_print_self_test_result(std::uint32_t timestamp_ms, const Manufact
         timestamp_ms,
         result.passed,
         result.adc_raw,
-        result.adc_raw_in_range
+        result.adc_raw_in_range,
+        result.button_gpio_read_ok,
+        result.button_level
     )) {
         Serial.println(buffer);
     }

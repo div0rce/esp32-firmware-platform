@@ -26,7 +26,9 @@ bool format_self_test_event(
     uint32_t timestamp_ms,
     bool passed,
     int adc_raw,
-    bool adc_raw_in_range
+    bool adc_raw_in_range,
+    bool button_gpio_read_ok,
+    bool button_level
 );
 
 #ifdef __cplusplus
