@@ -20,7 +20,7 @@
 #endif
 
 #define SERIAL_BAUD_RATE ((uint32_t)115200)
-#define TELEMETRY_BUFFER_LENGTH ((size_t)128)
+#define TELEMETRY_BUFFER_LENGTH ((size_t)256)
 
 #define ADC_RAW_MIN 0
 #define ADC_RAW_MAX 4095
@@ -40,6 +40,7 @@
 #define BUTTON_DEBOUNCE_MS ((uint32_t)200)
 #define APP_WATCHDOG_TIMEOUT_MS ((uint32_t)1000)
 #define FAULT_TASK_PERIOD_MS ((uint32_t)50)
+#define RUNTIME_HEALTH_PERIOD_MS ((uint32_t)1000)
 
 #define SAMPLE_REQUEST_QUEUE_LENGTH ((size_t)16)
 #define SENSOR_QUEUE_LENGTH ((size_t)16)
