@@ -29,21 +29,55 @@ void test_fault_event_format() {
 }
 
 void test_self_test_event_format_pass() {
-    char buffer[128];
+    char buffer[256];
 
-    TEST_ASSERT_TRUE(format_self_test_event(buffer, sizeof(buffer), 42, true, 2050, true, true, true));
+    TEST_ASSERT_TRUE(format_self_test_event(
+        buffer,
+        sizeof(buffer),
+        42,
+        "esp32-firmware-platform",
+        "dev",
+        "seeed_xiao_esp32s3",
+        true,
+        2050,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true
+    ));
     TEST_ASSERT_EQUAL_STRING(
-        "timestamp_ms=42,event=SELF_TEST,result=PASS,adc_raw=2050,adc=PASS,button_reg=PASS,button=1",
+        "timestamp_ms=42,event=SELF_TEST,fw=esp32-firmware-platform,version=dev,target=seeed_xiao_esp32s3,"
+        "result=PASS,adc_raw=2050,adc=PASS,button_reg=PASS,button=1,app_state=PASS,watchdog=PASS,queues=PASS,tasks=PASS",
         buffer
     );
 }
 
 void test_self_test_event_format_fail() {
-    char buffer[128];
+    char buffer[256];
 
-    TEST_ASSERT_TRUE(format_self_test_event(buffer, sizeof(buffer), 43, false, -1, false, false, false));
+    TEST_ASSERT_TRUE(format_self_test_event(
+        buffer,
+        sizeof(buffer),
+        43,
+        "esp32-firmware-platform",
+        "dev",
+        "seeed_xiao_esp32s3",
+        false,
+        -1,
+        false,
+        false,
+        false,
+        true,
+        false,
+        false,
+        false
+    ));
     TEST_ASSERT_EQUAL_STRING(
-        "timestamp_ms=43,event=SELF_TEST,result=FAIL,adc_raw=-1,adc=FAIL,button_reg=FAIL,button=0",
+        "timestamp_ms=43,event=SELF_TEST,fw=esp32-firmware-platform,version=dev,target=seeed_xiao_esp32s3,"
+        "result=FAIL,adc_raw=-1,adc=FAIL,button_reg=FAIL,button=0,app_state=PASS,watchdog=FAIL,queues=FAIL,tasks=FAIL",
         buffer
     );
 }

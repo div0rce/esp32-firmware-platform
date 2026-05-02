@@ -12,6 +12,12 @@ This is not a production manufacturing test suite. It is a bounded boot diagnost
 |---|---|---|
 | ADC raw sanity | Single `analogRead(ADC_PIN)` after `sensor_init()` | Raw value is within configured ADC bounds, `ADC_RAW_MIN..ADC_RAW_MAX` |
 | Button GPIO register read | Direct ESP32 GPIO input register read for `BUTTON_PIN` | Register read succeeds for the configured pin |
+| Button pin state readable | Captured boot-time GPIO input level | Button level is emitted as diagnostic data |
+| App state initialization | `app_state_init()` result | State mutex and initial state setup succeed |
+| Watchdog initialization | `watchdog_init()` result | ESP task watchdog init succeeds or is already initialized |
+| Queue creation | `create_queues()` result | Sample, telemetry, and button queues are allocated |
+| Task creation | `create_tasks()` result | Sensor, telemetry, button, and fault tasks are created |
+| Firmware metadata | Compile-time metadata from `app_config.h` | Firmware name, version, and target are emitted |
 
 The ADC check intentionally verifies the ADC read path returns a representable raw value. It does not require the potentiometer to be at midpoint and does not prove ADC accuracy or calibration.
 
@@ -22,13 +28,13 @@ The button GPIO check intentionally verifies that the configured button pin can 
 Passing example:
 
 ```text
-timestamp_ms=42,event=SELF_TEST,result=PASS,adc_raw=2050,adc=PASS,button_reg=PASS,button=1
+timestamp_ms=42,event=SELF_TEST,fw=esp32-firmware-platform,version=dev,target=seeed_xiao_esp32s3,result=PASS,adc_raw=2050,adc=PASS,button_reg=PASS,button=1,app_state=PASS,watchdog=PASS,queues=PASS,tasks=PASS
 ```
 
 Failing example:
 
 ```text
-timestamp_ms=43,event=SELF_TEST,result=FAIL,adc_raw=-1,adc=FAIL,button_reg=FAIL,button=0
+timestamp_ms=43,event=SELF_TEST,fw=esp32-firmware-platform,version=dev,target=seeed_xiao_esp32s3,result=FAIL,adc_raw=-1,adc=FAIL,button_reg=FAIL,button=0,app_state=PASS,watchdog=FAIL,queues=FAIL,tasks=FAIL
 ```
 
 If the self-test fails, firmware enters `FAULT_MANUFACTURING_SELF_TEST_FAILED` and drives the status LED high.
