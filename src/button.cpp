@@ -64,3 +64,11 @@ bool button_consume_overflow() {
 
     return overflow;
 }
+
+#if defined(ENABLE_STRESS_MODE)
+void button_stress_mark_overflow() {
+    portENTER_CRITICAL(&overflow_mux);
+    button_queue_overflow = true;
+    portEXIT_CRITICAL(&overflow_mux);
+}
+#endif

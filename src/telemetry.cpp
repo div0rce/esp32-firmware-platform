@@ -31,6 +31,14 @@ void telemetry_print_fault_event(std::uint32_t timestamp_ms, FaultCode fault) {
     }
 }
 
+void telemetry_print_runtime_health(const RuntimeHealthFields& fields) {
+    char buffer[TELEMETRY_BUFFER_LENGTH];
+
+    if (format_runtime_health_event(buffer, sizeof(buffer), &fields)) {
+        firmware_hal::uart_println(buffer);
+    }
+}
+
 void telemetry_print_self_test_result(std::uint32_t timestamp_ms, const ManufacturingSelfTestResult& result) {
     char buffer[TELEMETRY_BUFFER_LENGTH];
 
