@@ -7,10 +7,16 @@
 #define ADC_PIN ((uint8_t)34)
 #define BUTTON_PIN ((uint8_t)25)
 #define STATUS_LED_PIN ((uint8_t)2)
+#define TRACE_SAMPLE_PIN ((uint8_t)4)
+#define TRACE_TELEMETRY_PIN ((uint8_t)5)
+#define TRACE_FAULT_PIN ((uint8_t)18)
 #else
 #define ADC_PIN ((uint8_t)3)
 #define BUTTON_PIN ((uint8_t)2)
 #define STATUS_LED_PIN ((uint8_t)9)
+#define TRACE_SAMPLE_PIN ((uint8_t)4)
+#define TRACE_TELEMETRY_PIN ((uint8_t)5)
+#define TRACE_FAULT_PIN ((uint8_t)6)
 #endif
 
 #define SERIAL_BAUD_RATE ((uint32_t)115200)
