@@ -12,6 +12,9 @@
 #include "runtime_health.h"
 #include "sampling_timer.h"
 #include "sensor.h"
+#if defined(ENABLE_STRESS_MODE)
+#include "stress_mode.h"
+#endif
 #include "telemetry.h"
 #include "time_utils.h"
 #include "watchdog.h"
@@ -27,6 +30,10 @@ static TaskHandle_t fault_task_handle = nullptr;
 
 static portMUX_TYPE sample_timestamp_mux = portMUX_INITIALIZER_UNLOCKED;
 static std::uint32_t last_sample_timestamp_ms = 0;
+
+#if defined(ENABLE_STRESS_MODE)
+static StressModeState stress_mode_state;
+#endif
 
 static void record_sample_timestamp(std::uint32_t timestamp_ms) {
     portENTER_CRITICAL(&sample_timestamp_mux);
@@ -81,7 +88,13 @@ static void sensor_task(void* parameter) {
             app_state_apply_event(APP_EVENT_SAMPLE_STARTED);
 
             trace_pulse_begin(TRACE_SAMPLE_PIN);
-            const SensorSample sample = read_sensor_sample(request);
+            SensorSample sample = read_sensor_sample(request);
+#if defined(ENABLE_STRESS_MODE)
+            const FaultCode stress_fault = stress_mode_forced_sample_fault(sample.timestamp_ms);
+            if (stress_fault != FAULT_NONE) {
+                sample.fault = stress_fault;
+            }
+#endif
             trace_pulse_end(TRACE_SAMPLE_PIN);
             record_sample_timestamp(sample.timestamp_ms);
             runtime_health_record_sensor_sample();
@@ -128,6 +141,9 @@ static void telemetry_task(void* parameter) {
             telemetry_print_sample(state, sample);
             trace_pulse_end(TRACE_TELEMETRY_PIN);
             runtime_health_record_telemetry_packet();
+#if defined(ENABLE_STRESS_MODE)
+            stress_mode_delay_telemetry();
+#endif
 
             if (valid_sample && app_state_get_fault() == FAULT_NONE) {
                 app_state_apply_event(APP_EVENT_TRANSMIT_COMPLETE);
@@ -189,6 +205,10 @@ static void fault_task(void* parameter) {
         trace_pulse_begin(TRACE_FAULT_PIN);
         runtime_health_record_fault_check();
 
+#if defined(ENABLE_STRESS_MODE)
+        stress_mode_service(&stress_mode_state, millis(), button_event_queue);
+#endif
+
         if (button_consume_overflow()) {
             enter_fault(FAULT_BUTTON_QUEUE_SEND_FAILED);
         }
@@ -246,6 +266,9 @@ void setup() {
     }
 
     sensor_init();
+#if defined(ENABLE_STRESS_MODE)
+    stress_mode_init(&stress_mode_state);
+#endif
     const ManufacturingSelfTestResult self_test = manufacturing_self_test_run();
     telemetry_print_self_test_result(millis(), self_test);
 

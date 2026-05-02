@@ -67,3 +67,9 @@ bool sampling_timer_consume_overflow() {
 
     return overflow;
 }
+
+#if defined(ENABLE_STRESS_MODE)
+void sampling_timer_stress_mark_overflow() {
+    sampling_timer_set_overflow();
+}
+#endif
