@@ -1,0 +1,61 @@
+XIAO ESP32S3 physical ADC fault-injection artifact
+Target: Seeed Studio XIAO ESP32S3
+Source: PlatformIO USB serial monitor
+Baud: 115200
+Cases:
+- potentiometer near GND
+- potentiometer midpoint
+- potentiometer near 3V3
+Boundary: physical serial fault-behavior evidence only; not ADC accuracy, electrical safety, sensor calibration, board-level correctness, field reliability, or production readiness validation
+--- captured serial excerpts ---
+
+--- near GND capture ---
+timestamp_ms=587205,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=587305,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=587605,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=587905,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=588205,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=588505,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=588605,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=588905,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=589505,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=591405,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=591705,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=592005,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=592105,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=592905,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+timestamp_ms=593205,state=FAULT,adc_raw=0,voltage_mv=0,fault=ADC_OUT_OF_RANGE
+
+--- midpoint capture ---
+timestamp_ms=41105,state=TRANSMIT,adc_raw=2063,voltage_mv=1659,fault=NONE
+timestamp_ms=41205,state=TRANSMIT,adc_raw=2063,voltage_mv=1659,fault=NONE
+timestamp_ms=41305,state=TRANSMIT,adc_raw=2039,voltage_mv=1658,fault=NONE
+timestamp_ms=41805,state=TRANSMIT,adc_raw=2065,voltage_mv=1660,fault=NONE
+timestamp_ms=42105,state=TRANSMIT,adc_raw=2055,voltage_mv=1664,fault=NONE
+timestamp_ms=42305,state=TRANSMIT,adc_raw=2039,voltage_mv=1653,fault=NONE
+timestamp_ms=43705,state=TRANSMIT,adc_raw=2044,voltage_mv=1654,fault=NONE
+timestamp_ms=44205,state=TRANSMIT,adc_raw=2048,voltage_mv=1654,fault=NONE
+timestamp_ms=44705,state=TRANSMIT,adc_raw=2044,voltage_mv=1661,fault=NONE
+timestamp_ms=45205,state=TRANSMIT,adc_raw=2041,voltage_mv=1648,fault=NONE
+timestamp_ms=45605,state=TRANSMIT,adc_raw=2052,voltage_mv=1650,fault=NONE
+timestamp_ms=46205,state=TRANSMIT,adc_raw=2045,voltage_mv=1653,fault=NONE
+timestamp_ms=46605,state=TRANSMIT,adc_raw=2087,voltage_mv=1663,fault=NONE
+timestamp_ms=47205,state=TRANSMIT,adc_raw=2063,voltage_mv=1654,fault=NONE
+timestamp_ms=47605,state=TRANSMIT,adc_raw=2065,voltage_mv=1654,fault=NONE
+
+--- near 3V3 capture ---
+timestamp_ms=107105,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=107205,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=107305,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=107405,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=107505,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=107605,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=107705,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=107805,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=107905,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=108005,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=108105,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=108205,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=108305,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=108405,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
+timestamp_ms=108505,state=FAULT,adc_raw=4095,voltage_mv=3300,fault=ADC_OUT_OF_RANGE
