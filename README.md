@@ -102,6 +102,22 @@ Pure logic modules are separated from Arduino-dependent modules so that conversi
 
 Current validation includes CI build, host-side logic tests, a Wokwi runtime telemetry gate, bounded physical XIAO ESP32S3 serial evidence, physical ADC fault-injection evidence, and a selected oscilloscope GPIO timing trace.
 
+## Embedded Evidence Map
+
+| Embedded skill | Repository evidence |
+|---|---|
+| RTOS firmware structure | FreeRTOS `sensor_task`, `telemetry_task`, `button_task`, and `fault_task` with queue-backed ownership boundaries |
+| ISR-safe event handling | GPIO button interrupt posts `ButtonEvent` payloads through a FreeRTOS queue and debounces in task context |
+| Hardware bring-up | Physical XIAO ESP32S3 serial bring-up notes and committed serial excerpt in `artifacts/hardware/esp32_serial_log.txt` |
+| Fault injection and recovery | ADC low/mid/high physical fault-injection evidence plus native tests for fault state behavior and ADC hysteresis |
+| Developer-driven testing | PlatformIO native Unity tests, GitHub Actions firmware build, and Wokwi runtime telemetry gate |
+| Performance trade-offs | Firmware size snapshot, timing configuration, trace overhead, and documented optimization decisions in `docs/performance_optimization_evidence.md` |
+| Hardware debugging | UART telemetry, optional GPIO trace pins, and selected oscilloscope timing screenshot |
+| Bare-metal awareness | Portable C logic boundary and explicit bare-metal porting notes in `docs/bare_metal_porting_notes.md` |
+| Manufacturing-style diagnostics | Boot-time self-test telemetry and failure behavior documented in `docs/manufacturing_self_test.md` |
+
+This map is intended as a quick reviewer guide. It points to implemented evidence and does not expand the claims beyond the validation boundaries below.
+
 ## Evidence Boundaries
 
 This repository currently provides build validation, host-side native tests, Wokwi simulation runtime checks, physical serial bench evidence, and selected oscilloscope GPIO trace evidence.
