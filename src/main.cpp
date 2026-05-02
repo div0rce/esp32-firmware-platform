@@ -39,6 +39,30 @@ static void enter_fault(FaultCode fault) {
     app_state_set_fault(fault);
 }
 
+#ifdef ENABLE_TRACE_PINS
+static void trace_pins_init() {
+    pinMode(TRACE_SAMPLE_PIN, OUTPUT);
+    pinMode(TRACE_TELEMETRY_PIN, OUTPUT);
+    pinMode(TRACE_FAULT_PIN, OUTPUT);
+
+    digitalWrite(TRACE_SAMPLE_PIN, LOW);
+    digitalWrite(TRACE_TELEMETRY_PIN, LOW);
+    digitalWrite(TRACE_FAULT_PIN, LOW);
+}
+
+static void trace_pulse_begin(uint8_t pin) {
+    digitalWrite(pin, HIGH);
+}
+
+static void trace_pulse_end(uint8_t pin) {
+    digitalWrite(pin, LOW);
+}
+#else
+static void trace_pins_init() {}
+static void trace_pulse_begin(uint8_t) {}
+static void trace_pulse_end(uint8_t) {}
+#endif
+
 static void sensor_task(void* parameter) {
     (void)parameter;
     (void)watchdog_register_current_task();
@@ -49,7 +73,9 @@ static void sensor_task(void* parameter) {
         if (xQueueReceive(sample_request_queue, &request, portMAX_DELAY) == pdPASS) {
             app_state_apply_event(APP_EVENT_SAMPLE_STARTED);
 
+            trace_pulse_begin(TRACE_SAMPLE_PIN);
             const SensorSample sample = read_sensor_sample(request);
+            trace_pulse_end(TRACE_SAMPLE_PIN);
             record_sample_timestamp(sample.timestamp_ms);
 
             if (!sample_is_valid(sample)) {
@@ -89,7 +115,9 @@ static void telemetry_task(void* parameter) {
                 app_state_apply_event(APP_EVENT_TRANSMIT_STARTED);
             }
 
+            trace_pulse_begin(TRACE_TELEMETRY_PIN);
             telemetry_print_sample(state, sample);
+            trace_pulse_end(TRACE_TELEMETRY_PIN);
 
             if (valid_sample && app_state_get_fault() == FAULT_NONE) {
                 app_state_apply_event(APP_EVENT_TRANSMIT_COMPLETE);
@@ -129,6 +157,8 @@ static void fault_task(void* parameter) {
     (void)watchdog_register_current_task();
 
     while (true) {
+        trace_pulse_begin(TRACE_FAULT_PIN);
+
         if (button_consume_overflow()) {
             enter_fault(FAULT_BUTTON_QUEUE_SEND_FAILED);
         }
@@ -146,6 +176,8 @@ static void fault_task(void* parameter) {
 
         const bool fault_active = app_state_get_state() == SYSTEM_STATE_FAULT;
         digitalWrite(STATUS_LED_PIN, fault_active ? HIGH : LOW);
+
+        trace_pulse_end(TRACE_FAULT_PIN);
 
         watchdog_reset_current_task();
         vTaskDelay(pdMS_TO_TICKS(FAULT_TASK_PERIOD_MS));
@@ -174,6 +206,7 @@ void setup() {
 
     pinMode(STATUS_LED_PIN, OUTPUT);
     digitalWrite(STATUS_LED_PIN, LOW);
+    trace_pins_init();
 
     if (!app_state_init() || !watchdog_init() || !create_queues()) {
         digitalWrite(STATUS_LED_PIN, HIGH);
