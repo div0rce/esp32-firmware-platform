@@ -21,6 +21,7 @@ Expected result:
 - State and fault string conversion tests pass.
 - ADC conversion and fault classification tests pass.
 - Telemetry formatting tests pass.
+- Native integration tests compose ADC classification, state transitions, telemetry formatting, recovery, and stale-sample timeout behavior.
 
 ## Stress Build
 
