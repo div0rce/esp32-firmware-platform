@@ -31,3 +31,18 @@ void telemetry_print_fault_event(std::uint32_t timestamp_ms, FaultCode fault) {
         Serial.println(buffer);
     }
 }
+
+void telemetry_print_self_test_result(std::uint32_t timestamp_ms, const ManufacturingSelfTestResult& result) {
+    char buffer[TELEMETRY_BUFFER_LENGTH];
+
+    if (format_self_test_event(
+        buffer,
+        sizeof(buffer),
+        timestamp_ms,
+        result.passed,
+        result.adc_raw,
+        result.adc_raw_in_range
+    )) {
+        Serial.println(buffer);
+    }
+}
