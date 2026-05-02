@@ -43,6 +43,35 @@ bool format_fault_event(char* buffer, size_t buffer_len, uint32_t timestamp_ms, 
     );
 }
 
+bool format_runtime_health_event(char* buffer, size_t buffer_len, const RuntimeHealthFields* fields) {
+    if (fields == NULL) {
+        return false;
+    }
+
+    return write_checked(
+        buffer,
+        buffer_len,
+        "timestamp_ms=%lu,event=RUNTIME_HEALTH,heap_free=%lu,heap_min=%lu,"
+        "stack_sensor=%lu,stack_telemetry=%lu,stack_button=%lu,stack_fault=%lu,"
+        "samples=%lu,telemetry=%lu,button_events=%lu,fault_checks=%lu,"
+        "queue_sample_req=%lu,queue_sensor=%lu,queue_button=%lu",
+        (unsigned long)fields->timestamp_ms,
+        (unsigned long)fields->heap_free_bytes,
+        (unsigned long)fields->heap_min_free_bytes,
+        (unsigned long)fields->sensor_stack_high_water_words,
+        (unsigned long)fields->telemetry_stack_high_water_words,
+        (unsigned long)fields->button_stack_high_water_words,
+        (unsigned long)fields->fault_stack_high_water_words,
+        (unsigned long)fields->sensor_samples,
+        (unsigned long)fields->telemetry_packets,
+        (unsigned long)fields->button_events,
+        (unsigned long)fields->fault_checks,
+        (unsigned long)fields->sample_request_queue_depth,
+        (unsigned long)fields->sensor_sample_queue_depth,
+        (unsigned long)fields->button_event_queue_depth
+    );
+}
+
 bool format_self_test_event(
     char* buffer,
     size_t buffer_len,
