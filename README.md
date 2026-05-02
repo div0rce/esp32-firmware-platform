@@ -17,6 +17,7 @@ This firmware models a small embedded monitoring system:
 - Emits compact UART telemetry packets.
 - Uses FreeRTOS tasks and queues to separate sampling, telemetry, button handling, and fault monitoring.
 - Integrates ESP task watchdog feeding plus an application watchdog for stale sampling.
+- Includes bounded physical XIAO ESP32S3 serial evidence and oscilloscope GPIO trace evidence.
 
 ## Architecture
 
@@ -48,6 +49,9 @@ Configured pin map:
 | ADC input | D2 / GPIO3 |
 | Button input | D1 / GPIO2 |
 | Status LED | D10 / GPIO9 |
+| Sample trace, optional | D3 / GPIO4 |
+| Telemetry trace, optional | D4 / GPIO5 |
+| Fault-task trace, optional | D5 / GPIO6 |
 | UART | USB serial, 115200 baud |
 
 Physical wiring is documented in `docs/wiring.md`. The Wokwi circuit in `diagram.json` uses the generic `esp32dev` simulation pin map and is not the source of truth for the XIAO ESP32S3 wiring.
@@ -70,7 +74,7 @@ pio device monitor
 
 ## Wokwi Simulation
 
-Build the `esp32dev` simulation firmware first, then open the project with Wokwi using the root `wokwi.toml` and `diagram.json` files. Wokwi configuration files are present, but no Wokwi run artifact is currently included.
+Build the `esp32dev` simulation firmware first, then open the project with Wokwi using the root `wokwi.toml` and `diagram.json` files. CI also runs a bounded Wokwi runtime check that requires non-empty telemetry, `fault=NONE`, and no `task_wdt` reset.
 
 ## Telemetry Format
 
@@ -90,26 +94,27 @@ Pure logic modules are separated from Arduino-dependent modules so that conversi
 | PlatformIO ESP32 firmware builds | Verified | Local build + GitHub Actions |
 | Native logic tests pass | Verified | Local tests + GitHub Actions |
 | Wokwi configuration files present | Configured | `wokwi.toml`, `diagram.json` |
-| Wokwi serial telemetry artifact | Pending | No Wokwi run artifact currently included |
-| Physical ESP32 hardware validation | Not available | No board |
-| Oscilloscope / logic analyzer traces | Not available | No board |
-| Real hardware bring-up | Not claimed | Correctly withheld |
+| Wokwi runtime telemetry gate | Verified | `scripts/wokwi_runtime_check.sh`, GitHub Actions `wokwi-runtime` |
+| Physical XIAO ESP32S3 serial bring-up | Verified | `docs/hardware_bringup.md`, `artifacts/hardware/esp32_serial_log.txt` |
+| Physical ADC fault-injection behavior | Verified | `docs/hardware_fault_injection.md`, `artifacts/hardware/esp32_fault_injection_log.txt` |
+| Oscilloscope GPIO timing trace | Captured | `docs/hardware_oscilloscope_trace.md`, `artifacts/hardware/oscilloscope_trace_midpoint.png` |
+| Long-run physical stability | Pending | No 30-minute physical run artifact currently included |
 
-Current validation is build, host-side logic tests, and Wokwi configuration presence. Physical ESP32 hardware validation is not claimed because no board run has been captured.
+Current validation includes CI build, host-side logic tests, a Wokwi runtime telemetry gate, bounded physical XIAO ESP32S3 serial evidence, physical ADC fault-injection evidence, and a selected oscilloscope GPIO timing trace.
 
 ## Evidence Boundaries
 
-This repository currently provides build validation, host-side native tests, Wokwi configuration files, and design-level timing and porting notes.
+This repository currently provides build validation, host-side native tests, Wokwi simulation runtime checks, physical serial bench evidence, and selected oscilloscope GPIO trace evidence.
 
-It does not claim physical ESP32 hardware validation, measured timing traces, oscilloscope/logic analyzer evidence, or captured Wokwi serial output.
+It does not claim physical ADC accuracy, electrical safety validation, sensor calibration, board-level correctness, production readiness, field reliability, or timing closure. The oscilloscope evidence is a selected GPIO timing trace, not a logic analyzer capture.
 
 ## Limitations
 
-- No physical ESP32 board run has been captured.
-- No oscilloscope or logic analyzer timing trace is included.
-- Wokwi output has not yet been captured as a validation artifact.
+- No 30-minute physical long-run stability artifact is currently included.
+- No logic analyzer capture is included.
 - This is an Arduino-ESP32 firmware prototype, not a bare-metal or production firmware stack.
-- Task watchdog integration is compiled and architecturally integrated; physical watchdog reset behavior is not claimed.
+- Physical serial captures show no observed `task_wdt` reset in the bounded runs, but this is not field reliability evidence.
+- Physical ADC fault behavior is demonstrated by manual potentiometer movement, but physical ADC accuracy and calibration are not claimed.
 
 ## Documentation
 
@@ -123,3 +128,6 @@ It does not claim physical ESP32 hardware validation, measured timing traces, os
 - `docs/test_plan.md`
 - `docs/validation_log.md`
 - `docs/timing_notes.md`
+- `docs/hardware_bringup.md`
+- `docs/hardware_fault_injection.md`
+- `docs/hardware_oscilloscope_trace.md`
