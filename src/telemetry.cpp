@@ -1,12 +1,11 @@
 #include "telemetry.h"
 
-#include <Arduino.h>
-
 #include "app_config.h"
+#include "firmware_hal.h"
 #include "telemetry_format.h"
 
 void telemetry_init() {
-    Serial.begin(SERIAL_BAUD_RATE);
+    firmware_hal::uart_begin(SERIAL_BAUD_RATE);
 }
 
 void telemetry_print_sample(SystemState state, const SensorSample& sample) {
@@ -20,7 +19,7 @@ void telemetry_print_sample(SystemState state, const SensorSample& sample) {
     fields.fault = sample.fault;
 
     if (format_telemetry_packet(buffer, sizeof(buffer), &fields)) {
-        Serial.println(buffer);
+        firmware_hal::uart_println(buffer);
     }
 }
 
@@ -28,7 +27,15 @@ void telemetry_print_fault_event(std::uint32_t timestamp_ms, FaultCode fault) {
     char buffer[TELEMETRY_BUFFER_LENGTH];
 
     if (format_fault_event(buffer, sizeof(buffer), timestamp_ms, fault)) {
-        Serial.println(buffer);
+        firmware_hal::uart_println(buffer);
+    }
+}
+
+void telemetry_print_runtime_health(const RuntimeHealthFields& fields) {
+    char buffer[TELEMETRY_BUFFER_LENGTH];
+
+    if (format_runtime_health_event(buffer, sizeof(buffer), &fields)) {
+        firmware_hal::uart_println(buffer);
     }
 }
 
@@ -39,12 +46,19 @@ void telemetry_print_self_test_result(std::uint32_t timestamp_ms, const Manufact
         buffer,
         sizeof(buffer),
         timestamp_ms,
+        result.firmware_name,
+        result.firmware_version,
+        result.firmware_target,
         result.passed,
         result.adc_raw,
         result.adc_raw_in_range,
         result.button_gpio_read_ok,
-        result.button_level
+        result.button_level,
+        result.app_state_init_ok,
+        result.watchdog_init_ok,
+        result.queue_create_ok,
+        result.task_create_ok
     )) {
-        Serial.println(buffer);
+        firmware_hal::uart_println(buffer);
     }
 }

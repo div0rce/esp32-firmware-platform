@@ -43,25 +43,73 @@ bool format_fault_event(char* buffer, size_t buffer_len, uint32_t timestamp_ms, 
     );
 }
 
+bool format_runtime_health_event(char* buffer, size_t buffer_len, const RuntimeHealthFields* fields) {
+    if (fields == NULL) {
+        return false;
+    }
+
+    return write_checked(
+        buffer,
+        buffer_len,
+        "timestamp_ms=%lu,event=RUNTIME_HEALTH,heap_free=%lu,heap_min=%lu,"
+        "stack_sensor=%lu,stack_telemetry=%lu,stack_button=%lu,stack_fault=%lu,"
+        "samples=%lu,telemetry=%lu,button_events=%lu,fault_checks=%lu,"
+        "queue_sample_req=%lu,queue_sensor=%lu,queue_button=%lu",
+        (unsigned long)fields->timestamp_ms,
+        (unsigned long)fields->heap_free_bytes,
+        (unsigned long)fields->heap_min_free_bytes,
+        (unsigned long)fields->sensor_stack_high_water_words,
+        (unsigned long)fields->telemetry_stack_high_water_words,
+        (unsigned long)fields->button_stack_high_water_words,
+        (unsigned long)fields->fault_stack_high_water_words,
+        (unsigned long)fields->sensor_samples,
+        (unsigned long)fields->telemetry_packets,
+        (unsigned long)fields->button_events,
+        (unsigned long)fields->fault_checks,
+        (unsigned long)fields->sample_request_queue_depth,
+        (unsigned long)fields->sensor_sample_queue_depth,
+        (unsigned long)fields->button_event_queue_depth
+    );
+}
+
 bool format_self_test_event(
     char* buffer,
     size_t buffer_len,
     uint32_t timestamp_ms,
+    const char* firmware_name,
+    const char* firmware_version,
+    const char* firmware_target,
     bool passed,
     int adc_raw,
     bool adc_raw_in_range,
     bool button_gpio_read_ok,
-    bool button_level
+    bool button_level,
+    bool app_state_init_ok,
+    bool watchdog_init_ok,
+    bool queue_create_ok,
+    bool task_create_ok
 ) {
+    if (firmware_name == NULL || firmware_version == NULL || firmware_target == NULL) {
+        return false;
+    }
+
     return write_checked(
         buffer,
         buffer_len,
-        "timestamp_ms=%lu,event=SELF_TEST,result=%s,adc_raw=%d,adc=%s,button_reg=%s,button=%u",
+        "timestamp_ms=%lu,event=SELF_TEST,fw=%s,version=%s,target=%s,result=%s,"
+        "adc_raw=%d,adc=%s,button_reg=%s,button=%u,app_state=%s,watchdog=%s,queues=%s,tasks=%s",
         (unsigned long)timestamp_ms,
+        firmware_name,
+        firmware_version,
+        firmware_target,
         passed ? "PASS" : "FAIL",
         adc_raw,
         adc_raw_in_range ? "PASS" : "FAIL",
         button_gpio_read_ok ? "PASS" : "FAIL",
-        button_level ? 1U : 0U
+        button_level ? 1U : 0U,
+        app_state_init_ok ? "PASS" : "FAIL",
+        watchdog_init_ok ? "PASS" : "FAIL",
+        queue_create_ok ? "PASS" : "FAIL",
+        task_create_ok ? "PASS" : "FAIL"
     );
 }
