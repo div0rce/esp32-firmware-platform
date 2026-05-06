@@ -2,28 +2,33 @@
 
 ## Design Goal
 
-This project is a small ESP32 firmware architecture prototype for a fault-monitored sensor node. It is meant to demonstrate modular embedded structure, timer-driven sampling, ISR-safe event handling, fault-state behavior, UART telemetry, watchdog logic, native tests, and CI.
+This project demonstrates an ESP32S3 firmware architecture that separates portable application behavior from scheduler and hardware integration.
 
-It is not presented as production firmware or physical hardware bring-up.
+The public claim is:
+
+```text
+ESP-IDF bare-metal-compatible port with RTOS and cooperative execution backends.
+```
+
+It is not production firmware, pure register-only firmware, or a hard-real-time proof under all ESP-IDF system conditions.
 
 ## Module Boundaries
 
-Hardware-facing modules stay in C++ because they depend on Arduino-ESP32, FreeRTOS, or ESP-IDF APIs:
+Hardware-facing modules stay outside `components/app_core` because they depend on ESP-IDF, FreeRTOS, or board-specific behavior:
 
 | Module | Boundary |
 |---|---|
-| `main.cpp` | FreeRTOS task integration and queue ownership |
-| `sensor.cpp` | `analogRead()` wrapper and sensor filter instance |
-| `telemetry.cpp` | `Serial` ownership |
-| `button.cpp` | GPIO interrupt event queue |
-| `sampling_timer.cpp` | ESP timer setup and queue posting |
-| `watchdog.cpp` | ESP task watchdog wrapper |
-| `app_state.cpp` | FreeRTOS mutex-protected application state |
+| `main/app_main.cpp` | Project-level backend selection |
+| `components/app_backends/src/app_rtos_backend.cpp` | FreeRTOS task, queue, timer, and watchdog integration |
+| `components/app_backends/src/app_cooperative_backend.cpp` | Cooperative scheduler loop and watchdog kick cadence |
+| `components/platform_esp32s3/src/platform_hal_esp32s3.cpp` | ESP32S3 platform HAL implementation |
+| `components/platform_esp32s3/src/firmware_hal_espidf.cpp` | ESP-IDF ADC, GPIO, UART, timer, and interrupt wrappers |
 
-Pure logic modules are C-compatible so they can be tested without an ESP32 board:
+Portable logic is C/C++ and built behind the HAL boundary:
 
 | Module | Responsibility |
 |---|---|
+| `components/app_core/src/app_core.cpp` | Cooperative app behavior and failure fallback policy |
 | `fault_state.c` | State and fault string conversion |
 | `sensor_math.c` | ADC conversion, moving average, fault hysteresis |
 | `telemetry_format.c` | Serial packet formatting |
@@ -32,11 +37,11 @@ Pure logic modules are C-compatible so they can be tested without an ESP32 board
 
 ## Timing Model
 
-Sampling is triggered by an ESP timer callback running in ESP timer task context. The callback does not read ADC, print, allocate memory, or mutate application state. It posts a small `SampleRequest` to `sensor_task`.
+The RTOS backend uses ESP-IDF/FreeRTOS tasks and queues. Sampling is triggered by an ESP timer path and handled in task context.
 
-`sensor_task` owns ADC reads. `telemetry_task` owns UART output. `button_task` performs debounce outside the GPIO ISR. `fault_task` checks queue overflow flags and stale-sample timing.
+The cooperative backend uses one loop with a 1 ms sleep policy. It calls `app_core_tick()` with monotonic platform time, then kicks the watchdog. This shows scheduler ownership can change without moving ESP-IDF driver headers into portable application behavior.
 
-Unsigned 32-bit elapsed-time checks are isolated in `time_utils.c` and tested for rollover behavior.
+Unsigned 32-bit elapsed-time checks remain isolated and tested for rollover behavior.
 
 ## Fault Model
 
@@ -52,35 +57,18 @@ Faults are explicit enum values rather than string-only conditions:
 
 ADC fault classification uses a fixed-window moving average and separate enter/clear thresholds so readings near the boundary do not flicker between normal and fault states.
 
+## Failure Paths
+
+HAL functions that can fail return `bool`. The cooperative app core treats ADC read failure as an explicit ADC fault, treats UART write failure as non-fatal telemetry loss, and holds in a safe sleep loop if platform initialization fails.
+
 ## Test Strategy
 
-Native tests cover logic that does not require Arduino, FreeRTOS, or ESP-IDF:
+Required gates:
 
-- state and fault string conversion
-- ADC conversion and fault classification
-- ADC moving average and hysteresis boundaries
-- telemetry packet formatting and small-buffer rejection
-- state-machine transitions
-- unsigned 32-bit elapsed-time rollover
+- ESP-IDF RTOS build
+- ESP-IDF cooperative build
+- PlatformIO native Unity tests
+- PlatformIO legacy ESP32S3 build
+- app-core include guard
 
-The ESP32 build verifies that the Arduino/FreeRTOS integration compiles against the pinned PlatformIO `espressif32 @ 6.13.0` environment.
-
-## Limitations
-
-- No physical ESP32 board run is claimed.
-- No oscilloscope or logic analyzer measurements are included.
-- Wokwi configuration files are present, but no Wokwi run artifact is currently included.
-- Arduino-ESP32 provides the hardware abstraction layer; this is not bare-metal register-level firmware.
-- ESP task watchdog integration is compiled, but physical watchdog reset behavior is not validated without hardware.
-- ADC behavior is architecturally modeled and unit-tested; actual ESP32 ADC calibration and noise behavior require board-level validation.
-
-## Future Hardware Validation
-
-When a board is available, validation should add real artifacts only:
-
-- serial monitor capture from an ESP32 run
-- wiring photo or clear simulation-labeled Wokwi screenshot
-- measured sampling cadence
-- button debounce observations
-- fault recovery notes
-- optional oscilloscope or logic analyzer trace
+Optional hardware evidence remains bounded to available tools: serial telemetry, ADC fault injection, and oscilloscope GPIO trace evidence. JTAG and logic-analyzer evidence are not claimed.
