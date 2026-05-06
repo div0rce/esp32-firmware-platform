@@ -1,3 +1,15 @@
 menu "Application Configuration"
 
+choice APP_EXECUTION_MODEL
+    prompt "Application execution model"
+    default APP_EXECUTION_MODEL_RTOS
+
+config APP_EXECUTION_MODEL_RTOS
+    bool "RTOS backend"
+
+config APP_EXECUTION_MODEL_COOPERATIVE
+    bool "Cooperative backend"
+
+endchoice
+
 endmenu

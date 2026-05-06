@@ -1,14 +1,16 @@
 idf_component_register(
     SRCS
-        "src/app_core.cpp"
-        "../../src/fault_state.c"
-        "../../src/sensor_math.c"
-        "../../src/state_machine.c"
-        "../../src/telemetry_format.c"
-        "../../src/time_utils.c"
+        "src/firmware_hal_espidf.cpp"
+        "src/platform_hal_esp32s3.cpp"
     INCLUDE_DIRS
         "include"
         "../../include"
+    REQUIRES
+        app_core
+        driver
+        esp_adc
+        esp_timer
+        esp_system
 )
 
 target_compile_options(
