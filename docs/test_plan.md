@@ -1,49 +1,30 @@
 # Test Plan
 
-## Local Build
+## Required Gates
 
-```bash
-pio run -e seeed_xiao_esp32s3
-```
+| Gate | Command | Pass condition |
+|---|---|---|
+| ESP-IDF RTOS build | `idf.py -B build-rtos -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.ci.rtos" set-target esp32s3 build` | ESP32S3 image builds |
+| ESP-IDF cooperative build | `idf.py -B build-cooperative -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.ci.cooperative" set-target esp32s3 build` | ESP32S3 image builds |
+| Host/native tests | `pio test -e native` | Existing Unity tests pass |
+| HAL include guard | `scripts/check_app_core_includes.sh` | No forbidden runtime headers in app core |
+| Legacy PlatformIO build | `pio run -e seeed_xiao_esp32s3` | Transitional Arduino build still compiles |
 
-Expected result:
+## Optional Hardware Gates
 
-- XIAO ESP32S3 firmware compiles with pinned PlatformIO dependencies.
-
-## Native Logic Tests
-
-```bash
-pio test -e native
-```
-
-Expected result:
-
-- State and fault string conversion tests pass.
-- ADC conversion and fault classification tests pass.
-- Telemetry formatting tests pass.
-- Native integration tests compose ADC classification, state transitions, telemetry formatting, recovery, and stale-sample timeout behavior.
-
-## Stress Build
-
-```bash
-pio run -e seeed_xiao_esp32s3_stress
-```
-
-Expected result:
-
-- Stress firmware compiles with forced ADC fault/recovery behavior enabled.
-- Button overflow and sampling timer overflow fault paths are compiled into the opt-in stress build.
-- The default `seeed_xiao_esp32s3` environment remains non-stress firmware.
+| Gate | Required? | Pass condition |
+|---|---:|---|
+| Serial sanity log | If board connected | Boot, telemetry output, and no observed watchdog reset |
+| Physical long-run test | No | Explicitly deferred |
+| JTAG / logic analyzer | No | Explicitly unavailable with current hardware |
 
 ## CI
 
 GitHub Actions runs:
 
+- `esp-idf-builds` for RTOS and cooperative variants
 - `firmware-build`
 - `native-tests`
+- `wokwi-runtime` when `WOKWI_CLI_TOKEN` is available
 
-Both checks are required before protected `main` can accept a merge.
-
-## Hardware Status
-
-No physical XIAO ESP32S3 hardware validation is claimed until a board run is captured.
+The ESP-IDF CI job installs ESP-IDF `v5.2.5`, checks the app-core include boundary, and builds each execution model with its CI config fragment.

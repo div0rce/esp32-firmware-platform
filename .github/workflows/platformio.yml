@@ -7,6 +7,62 @@ on:
     branches: [main]
 
 jobs:
+  esp-idf-builds:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        execution_model:
+          - rtos
+          - cooperative
+    env:
+      IDF_VERSION: v5.2.5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install ESP-IDF prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bison \
+            ccache \
+            cmake \
+            dfu-util \
+            flex \
+            gperf \
+            libffi-dev \
+            libssl-dev \
+            libusb-1.0-0 \
+            ninja-build \
+            python3 \
+            python3-pip \
+            python3-venv \
+            wget
+
+      - name: Install ESP-IDF
+        run: |
+          mkdir -p "$HOME/esp"
+          git clone \
+            --depth 1 \
+            --branch "$IDF_VERSION" \
+            --recursive \
+            --shallow-submodules \
+            https://github.com/espressif/esp-idf.git \
+            "$HOME/esp/esp-idf"
+          "$HOME/esp/esp-idf/install.sh" esp32s3
+
+      - name: Check app core include boundary
+        run: scripts/check_app_core_includes.sh
+
+      - name: Build ESP-IDF ${{ matrix.execution_model }} backend
+        shell: bash
+        run: |
+          . "$HOME/esp/esp-idf/export.sh"
+          idf.py \
+            -B "build-${{ matrix.execution_model }}" \
+            -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.ci.${{ matrix.execution_model }}" \
+            set-target esp32s3 build
+
   firmware-build:
     runs-on: ubuntu-latest
     steps:
