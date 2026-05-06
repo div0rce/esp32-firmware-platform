@@ -129,6 +129,7 @@ It also does not claim physical ADC accuracy, electrical safety validation, sens
 - `docs/hal_boundary.md`
 - `docs/bare_metal_porting_notes.md`
 - `docs/evidence_map.md`
+- `docs/branch_protection.md`
 - `docs/test_plan.md`
 - `docs/validation_log.md`
 - `docs/wiring.md`
