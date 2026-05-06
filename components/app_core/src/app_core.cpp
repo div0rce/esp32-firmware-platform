@@ -14,37 +14,39 @@ bool due(uint32_t now_ms, uint32_t scheduled_ms) {
 
 void publish_sample(AppCoreContext* context, uint32_t now_ms) {
     uint16_t raw = 0;
-    FaultCode fault = FAULT_NONE;
+    FaultCode sample_fault = FAULT_NONE;
 
     if (!platform_adc_read_raw(&raw)) {
-        fault = FAULT_ADC_OUT_OF_RANGE;
+        sample_fault = FAULT_ADC_OUT_OF_RANGE;
         context->last_adc_raw = -1;
         context->last_voltage_mv = 0;
         context->adc_range_state = ADC_RANGE_LOW_FAULT;
     } else {
         const int filtered_raw = adc_moving_average_update(&context->adc_filter, raw);
         context->adc_range_state = adc_range_update(context->adc_range_state, filtered_raw);
-        fault = fault_for_adc_range(context->adc_range_state);
+        sample_fault = fault_for_adc_range(context->adc_range_state);
         context->last_adc_raw = raw;
         context->last_voltage_mv = adc_raw_to_mv(filtered_raw);
     }
 
-    context->fault = fault;
     context->has_sample = true;
     context->samples += 1U;
     context->state = state_machine_next(context->state, APP_EVENT_SAMPLE_STARTED);
 
-    if (fault != FAULT_NONE) {
+    if (sample_fault != FAULT_NONE) {
+        context->fault = sample_fault;
         context->state = state_machine_next(context->state, APP_EVENT_FAULT_DETECTED);
         platform_gpio_write(PLATFORM_GPIO_STATUS_LED, true);
     }
 
+    const bool fault_active = context->state == SYSTEM_STATE_FAULT || context->fault != FAULT_NONE;
+
     TelemetryFields fields;
     fields.timestamp_ms = now_ms;
-    fields.state = fault == FAULT_NONE ? SYSTEM_STATE_TRANSMIT : SYSTEM_STATE_FAULT;
+    fields.state = fault_active ? SYSTEM_STATE_FAULT : SYSTEM_STATE_TRANSMIT;
     fields.adc_raw = context->last_adc_raw;
     fields.voltage_mv = context->last_voltage_mv;
-    fields.fault = fault;
+    fields.fault = context->fault;
 
     char buffer[TELEMETRY_BUFFER_LENGTH];
     if (format_telemetry_packet(buffer, sizeof(buffer), &fields)) {
@@ -52,7 +54,7 @@ void publish_sample(AppCoreContext* context, uint32_t now_ms) {
         context->telemetry_packets += 1U;
     }
 
-    if (fault == FAULT_NONE) {
+    if (!fault_active) {
         context->state = state_machine_next(context->state, APP_EVENT_TRANSMIT_STARTED);
         context->state = state_machine_next(context->state, APP_EVENT_TRANSMIT_COMPLETE);
         platform_gpio_write(PLATFORM_GPIO_STATUS_LED, false);
@@ -87,7 +89,7 @@ void app_core_tick(AppCoreContext* context, uint32_t now_ms) {
         return;
     }
 
-    if (platform_button_read() && context->fault != FAULT_NONE) {
+    if (platform_button_read() && context->state == SYSTEM_STATE_FAULT) {
         context->button_events += 1U;
         context->fault = FAULT_NONE;
         context->state = state_machine_next(context->state, APP_EVENT_RECOVERY_REQUESTED);
