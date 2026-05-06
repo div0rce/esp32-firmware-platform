@@ -1,0 +1,32 @@
+idf_component_register(
+    SRCS
+        "src/app_cooperative_backend.cpp"
+        "src/app_rtos_backend.cpp"
+        "../../src/app_state.cpp"
+        "../../src/button.cpp"
+        "../../src/manufacturing_self_test.cpp"
+        "../../src/runtime_health.cpp"
+        "../../src/sampling_timer.cpp"
+        "../../src/sensor.cpp"
+        "../../src/stress_mode.cpp"
+        "../../src/telemetry.cpp"
+        "../../src/watchdog.cpp"
+    INCLUDE_DIRS
+        "include"
+        "../../include"
+    REQUIRES
+        app_core
+        platform_esp32s3
+        driver
+        esp_timer
+        esp_system
+)
+
+target_compile_options(
+    ${COMPONENT_LIB}
+    PRIVATE
+        -Wall
+        -Wextra
+        -Werror
+        -Wshadow
+)
