@@ -1,0 +1,20 @@
+idf_component_register(
+    SRCS
+        "../../src/fault_state.c"
+        "../../src/sensor_math.c"
+        "../../src/state_machine.c"
+        "../../src/telemetry_format.c"
+        "../../src/time_utils.c"
+    INCLUDE_DIRS
+        "include"
+        "../../include"
+)
+
+target_compile_options(
+    ${COMPONENT_LIB}
+    PRIVATE
+        -Wall
+        -Wextra
+        -Werror
+        -Wshadow
+)
