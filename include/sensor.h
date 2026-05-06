@@ -3,7 +3,7 @@
 #include <cstdint>
 
 #include "fault_state.h"
-#include "sampling_timer.h"
+#include "sample_request.h"
 
 struct SensorSample {
     std::uint32_t timestamp_ms;

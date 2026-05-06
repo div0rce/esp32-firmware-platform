@@ -4,22 +4,18 @@ idf_component_register(
         "firmware_hal_espidf.cpp"
         "../src/app_state.cpp"
         "../src/button.cpp"
-        "../src/fault_state.c"
         "../src/manufacturing_self_test.cpp"
         "../src/runtime_health.cpp"
         "../src/sampling_timer.cpp"
         "../src/sensor.cpp"
-        "../src/sensor_math.c"
-        "../src/state_machine.c"
         "../src/stress_mode.cpp"
         "../src/telemetry.cpp"
-        "../src/telemetry_format.c"
-        "../src/time_utils.c"
         "../src/watchdog.cpp"
     INCLUDE_DIRS
         "."
         "../include"
     REQUIRES
+        app_core
         driver
         esp_adc
         esp_timer

@@ -5,9 +5,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 
-struct SampleRequest {
-    std::uint32_t timestamp_ms;
-};
+#include "sample_request.h"
 
 bool sampling_timer_start(QueueHandle_t queue);
 void sampling_timer_stop();
