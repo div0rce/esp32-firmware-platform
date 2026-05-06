@@ -5,19 +5,22 @@
 | Parameter | Value |
 |---|---:|
 | Sample period | 100 ms |
+| Cooperative loop sleep | 1 ms |
 | Telemetry receive timeout | 250 ms |
+| Fault task period | 50 ms |
 | Button debounce | 200 ms |
 | Application watchdog timeout | 1000 ms |
+| ESP task watchdog timeout | 3 s |
 | UART baud rate | 115200 |
 
 ## Observations
 
-No physical timing measurements are included.
+Current evidence includes selected GPIO trace timing from real hardware in `docs/hardware_oscilloscope_trace.md`.
 
-Pending future artifacts:
+The repository does not claim timing closure, worst-case interrupt latency, deterministic hard real-time behavior under all ESP-IDF system conditions, or logic-analyzer coverage.
 
-- Wokwi serial telemetry capture.
-- Real hardware serial output.
-- Real oscilloscope or logic analyzer timing traces.
+## Pending Or Deferred
 
-Physical timing artifacts must not be added unless measured from real hardware.
+- Logic analyzer trace: unavailable with current hardware.
+- JTAG timing/debug evidence: unavailable with current hardware.
+- Physical long-run stability: explicitly deferred.

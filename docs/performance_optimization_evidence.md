@@ -17,7 +17,18 @@ The measurements here are build and configuration evidence from the current repo
 
 ## Firmware Size Snapshot
 
-Captured from PlatformIO build output.
+Captured from ESP-IDF and PlatformIO build output.
+
+### ESP-IDF
+
+| Variant | Command | App image size | Free in 1 MiB app partition |
+|---|---|---:|---:|
+| RTOS | `idf.py -B build-rtos-pr3 -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.ci.rtos" set-target esp32s3 build` | 241,072 B | 807,152 B |
+| Cooperative | `idf.py -B build-cooperative-pr3 -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.ci.cooperative" set-target esp32s3 build` | 235,648 B | 812,928 B |
+
+The cooperative image is smaller because the selected entry point does not start the RTOS task/queue application backend.
+
+### PlatformIO Legacy Build
 
 | Environment | Purpose | RAM used | RAM capacity | RAM use | Flash used | Flash capacity | Flash use |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -70,6 +81,7 @@ The following are not measured in this repository yet:
 - Current draw or power consumption.
 - Long-run physical stability duration beyond the committed short captures.
 - Timing closure under worst-case interrupt or UART load.
+- JTAG or logic-analyzer debug evidence.
 
 ## Boundary
 
