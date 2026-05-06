@@ -18,4 +18,4 @@ The branch protection setting is a GitHub repository setting, not a normal sourc
 scripts/configure_required_checks.sh
 ```
 
-The script preserves strict required status checks so pull requests must be up to date with `main`.
+The script requires branch protection to already be enabled for `main`; it fails with a clear error if that prerequisite is missing. It preserves strict required status checks so pull requests must be up to date with `main`.
