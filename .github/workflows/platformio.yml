@@ -27,6 +27,9 @@ jobs:
           test ! -e src/sensor_math.cpp
           test ! -e src/telemetry_format.cpp
 
+      - name: Check app core include boundary
+        run: scripts/check_app_core_includes.sh
+
       - name: Build XIAO ESP32S3 firmware
         run: platformio run -e seeed_xiao_esp32s3
 
@@ -49,6 +52,9 @@ jobs:
           test ! -e src/fault_state.cpp
           test ! -e src/sensor_math.cpp
           test ! -e src/telemetry_format.cpp
+
+      - name: Check app core include boundary
+        run: scripts/check_app_core_includes.sh
 
       - name: Run native tests
         run: platformio test -e native
