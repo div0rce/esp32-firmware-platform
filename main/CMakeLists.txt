@@ -1,33 +1,5 @@
 idf_component_register(
-    SRCS
-        "app_main.cpp"
-        "firmware_hal_espidf.cpp"
-        "../src/app_state.cpp"
-        "../src/button.cpp"
-        "../src/manufacturing_self_test.cpp"
-        "../src/runtime_health.cpp"
-        "../src/sampling_timer.cpp"
-        "../src/sensor.cpp"
-        "../src/stress_mode.cpp"
-        "../src/telemetry.cpp"
-        "../src/watchdog.cpp"
-    INCLUDE_DIRS
-        "."
-        "../include"
-    REQUIRES
-        app_core
-        driver
-        esp_adc
-        esp_timer
-        esp_system
-        log
-)
-
-target_compile_options(
-    ${COMPONENT_LIB}
-    PRIVATE
-        -Wall
-        -Wextra
-        -Werror
-        -Wshadow
+    SRCS "app_main.cpp"
+    INCLUDE_DIRS "."
+    REQUIRES app_backends
 )
