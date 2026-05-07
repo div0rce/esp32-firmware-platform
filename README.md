@@ -129,6 +129,9 @@ Key documentation:
 ## Build and Test
 
 ESP-IDF is pinned to `v5.2.5`; see `docs/toolchain.md`.
+Toolchain status is documented in `docs/toolchain.md`: ESP-IDF is the primary
+firmware path, while PlatformIO is retained for native tests, Wokwi runtime
+checks, XIAO ESP32S3 PlatformIO builds, and legacy Arduino compatibility paths.
 
 ```bash
 # RTOS backend
