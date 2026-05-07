@@ -83,6 +83,8 @@ PlatformIO remains only as the current host/native test path and legacy Arduino 
 pio run -e seeed_xiao_esp32s3
 ```
 
+For a claim-to-validation mapping, see [CI Evidence Map](docs/ci_evidence_map.md).
+
 ## Upload And Monitor
 
 Requires a connected XIAO ESP32S3 board:
